@@ -16,7 +16,8 @@ export function renderPlanReport(plan) {
     .map(r => {
       const where = r.location?.page ? `第 ${r.location.page} 页第 ${r.location.row} 行第 ${r.location.column} 列` : '';
       const stats = r.main ? `${r.main.key} ${r.main.value} | ${(r.subs || []).map(x => `${x.key} ${x.value}${x.active ? '' : '（待激活）'}`).join(' · ')}` : '';
-      return `<li><strong>${e(r.name || r.id)}</strong> · ${e(r.set)} · ${e(SLOT_NAMES[r.slot] || '?')} +${e(r.level)}${r.character ? ` · ${e(r.character)}` : ''}<br><small>${e(stats)}</small><br><small>${e([where, ...r.reasons].filter(Boolean).join('；'))}</small></li>`;
+      const core = r.category === 'upgrade' && r.core ? `核心副词条：${r.core.length ? r.core.join('、') : '无要求（主词条已满足）'}` : '';
+      return `<li><strong>${e(r.name || r.id)}</strong> · ${e(r.set)} · ${e(SLOT_NAMES[r.slot] || '?')} +${e(r.level)}${r.character ? ` · ${e(r.character)}` : ''}<br><small>${e(stats)}</small>${core ? `<br><small>${e(core)}</small>` : ''}<br><small>${e([where, ...r.reasons].filter(Boolean).join('；'))}</small></li>`;
     }).join('') || '<li>无</li>';
   const labels = { keep: '保留', upgrade: '待强化', discard: '分解', review: '待复查', fodder: '材料' };
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>圣遗物整理计划</title><style>
@@ -28,6 +29,7 @@ ${plan.blockers.length ? `<div class="notice"><strong>分解清单已关闭</str
 <h2>待强化（${plan.counts.upgrade}）</h2><p><small>+4、+8、+12 三次中歪两次即停止；+12 时最多歪一次则强化到满级（五星 +20，四星 +16）。</small></p><ul>${list('upgrade')}</ul>
 <h2>分解（${plan.counts.discard}）</h2><ul>${list('discard')}</ul>
 ${plan.counts.discard ? `<h2>BetterGI 自动分解筛选脚本</h2><p><small>复制到 BetterGI「自动分解」的 JavaScript 设置中。只匹配上面分解清单里属性完全一致的圣遗物。${plan.salvage.skipped.length ? `有 ${plan.salvage.skipped.length} 件因库存中存在同属性保留件而跳过。` : ''}</small></p><textarea readonly>${e(plan.salvage.js)}</textarea>` : ''}
+<h2>作强化材料（${plan.counts.fodder}）</h2><p><small>不需要的四星及以下，喂给待强化件前请核对。</small></p><ul>${list('fodder')}</ul>
 <h2>待复查（${plan.counts.review}）</h2><ul>${list('review')}</ul>
 </main></body></html>`;
 }

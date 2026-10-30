@@ -147,6 +147,28 @@ describe('配装分配与清单', () => {
     const plan = buildPlan(snapshot([goblet('g1'), goblet('g2')]), doc);
     expect(plan.records.filter(r => r.category === 'upgrade').map(r => r.id).sort()).toEqual(['g1', 'g2']);
   });
+  test('已到 +8 且估算已歪两次的候选不再建议强化', () => {
+    const set = fullSet('a', 1);
+    const bent = item('bent', { level: 8, subs: [sub('cpct', 1), sub('atk', 3), sub('def', 1), sub('hp', 1)] });
+    const ok = item('ok', { level: 8, subs: [sub('cpct', 2), sub('cdmg', 1), sub('atk', 2), sub('def', 1)] });
+    const plan = buildPlan(snapshot([...set, bent, ok]), builds());
+    expect(plan.records.find(r => r.id === 'bent').category).toBe('discard');
+    expect(plan.records.find(r => r.id === 'ok').category).toBe('upgrade');
+  });
+  test('四星副词条不足时待复查', () => {
+    const doc = builds();
+    doc.characters[0].builds[0].sets = ['教官'];
+    const a = item('t', { set: '教官', rarity: 4, level: 16, main: { key: 'hpPlus', value: 3571 }, subs: [sub('cpct', 1), sub('atk', 1)] });
+    expect(buildPlan(snapshot([a]), doc).records[0].category).toBe('review');
+  });
+  test('报告列出材料清单和待强化件的核心副词条', () => {
+    const set = fullSet('a', 1);
+    const hopeful = item('hope', { level: 0, subs: [sub('cpct', 1), sub('atk', 1), sub('def', 1)] });
+    const four = item('four', { name: '四星材料花', rarity: 4, level: 0, main: { key: 'hpPlus', value: 645 }, subs: [sub('atk', 1), sub('def', 1)] });
+    const html = renderPlanReport(buildPlan(snapshot([...set, hopeful, four]), builds()));
+    expect(html).toContain('核心副词条：');
+    expect(html).toContain('四星材料花');
+  });
   test('存在 blocker 时四星不作材料，改为待复查', () => {
     const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })], { complete: false }), builds());
     expect(plan.records.find(r => r.id === 'four').category).toBe('review');

@@ -1,4 +1,5 @@
 import { coreSubStats } from './scoring.js';
+import { MAX_ROLL } from './model.js';
 
 /** 强化检查点：+4、+8、+12 各一次副词条强化，用于判断是否歪掉。 */
 export const CHECK_LEVELS = [4, 8, 12];
@@ -30,6 +31,16 @@ export function coreForPiece(core, artifact, build) {
 /** 圣遗物是否带有任一核心副词条（含待激活词条）；核心为空表示不设副词条要求。 */
 export function hasCore(artifact, core) {
   return !core.length || artifact.subs.some(s => core.includes(s.key));
+}
+
+/**
+ * 由当前数值估算已歪的次数：非核心副词条每多一档（按单档最高值折算，向上取整）记一次歪。
+ * 快照不记录每次强化的落点，只能按数值反推；超过三档时可能低估，初始词条也可能被高估，仅用于筛选候选。
+ */
+export function estimateMisses(artifact, core) {
+  if (!core.length) return 0;
+  return artifact.subs.filter(s => s.active && !core.includes(s.key))
+    .reduce((n, s) => n + Math.max(0, Math.ceil(s.value / MAX_ROLL[s.key] - 0.05) - 1), 0);
 }
 
 /** 强化前后是否仍是同一件：名称、套装、部位、主词条一致，原有副词条全部保留且数值不降，最多新增一条。 */

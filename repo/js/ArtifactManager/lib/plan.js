@@ -1,6 +1,6 @@
 import { normalizeSnapshot, SLOT_NAMES } from './model.js';
 import { referenceScore, grade, gradeMin, potential, weightsFor, buildWeights } from './scoring.js';
-import { coreFor, coreForPiece, hasCore } from './upgrade.js';
+import { coreFor, coreForPiece, hasCore, estimateMisses, MAX_MISSES } from './upgrade.js';
 import { buildSalvageFilter } from './salvage-filter.js';
 
 /** builds.json 中沙、杯、头对应的部位编号。 */
@@ -104,7 +104,8 @@ export function buildPlan(input, buildsDoc) {
     const weights = weightsFor(build, c);
     const offSlot = lo.complete ? lo.slots.find(x => x.id && usable.find(a => a.id === x.id).set !== lo.set)?.slot : undefined;
     const offOk = slot => lo.complete && (offSlot === undefined || slot === offSlot);
-    const fitsCore = a => hasCore(a, coreForPiece(core, a, build));
+    // 带核心副词条，且按当前数值估算已歪不超过上限（已到 +8、+12 的件可能已经歪了两次）。
+    const fitsCore = a => { const k = coreForPiece(core, a, build); return hasCore(a, k) && estimateMisses(a, k) <= MAX_MISSES; };
     for (const s of lo.slots) {
       // 已选用件未满级时继续强化：已毕业的也要升满主词条；未毕业的须带核心副词条，否则强化规则会立即停止。
       const current = s.id && usable.find(a => a.id === s.id);

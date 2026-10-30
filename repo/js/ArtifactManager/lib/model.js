@@ -61,6 +61,8 @@ export function normalizeSnapshot(input) {
     }
     const active = a.subs.filter(s => s.active).length;
     if (a.rarity === 5 && (active < 3 || (a.level >= 4 && active !== 4))) a.issues.push('五星副词条缺失');
+    // 四星初始 2–3 条，+4 至少 3 条，+8 起 4 条。
+    if (a.rarity === 4 && (active < 2 || (a.level >= 4 && active < 3) || (a.level >= 8 && active !== 4))) a.issues.push('四星副词条缺失');
     if (a.rarity === 5) {
       const equivalent = a.subs.filter(s => s.active).reduce((n, s) => n + s.value / MAX_ROLL[s.key], 0);
       const minimum = (a.level < 4 ? active : 3 + Math.floor(a.level / 4)) * 0.7;
