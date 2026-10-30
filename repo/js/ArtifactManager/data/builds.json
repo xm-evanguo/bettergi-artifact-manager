@@ -1,0 +1,2054 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-10-30",
+  "description": "账号内 50 级及以上角色（不含旅行者）的圣遗物需求。sets 为可选 4 件套（按推荐顺序）；mainStats 为时之沙、空之杯、理之冠可接受的主词条；subStats 为副词条优先级。词条键与 lib/model.js 一致。 coreSubStats 为强化判断用的核心副词条：第一套配装默认取 miao 权重为 100 的副词条（lib/scoring.js coreSubStats），写了 coreSubStats 则以此为准；其余配装使用各自的 coreSubStats。",
+  "graduateGrade": "SSS",
+  "characters": [
+    {
+      "name": "芙宁娜",
+      "level": 100,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "黄金剧团",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "hp"
+            ],
+            "goblet": [
+              "hp",
+              "hydro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "cpct",
+            "cdmg",
+            "hp",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "奥黛塔",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "炉火熔炼之心",
+            "影中沉凝的幻灭",
+            "千岩牢固"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "atk"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://shouyou.3dmgame.com/gl/632687.html",
+        "https://www.taptap.cn/moment/836558201024416220"
+      ]
+    },
+    {
+      "name": "桑多涅",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "影中沉凝的幻灭",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "atk"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://m.ali213.net/news/gl2606/1783717.html",
+        "https://www.233leyuan.com/post-detail/2066553674197708800"
+      ]
+    },
+    {
+      "name": "尼可",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "天之美赐",
+            "昔日宗室之仪"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "recharge"
+            ],
+            "goblet": [
+              "atk"
+            ],
+            "circlet": [
+              "atk"
+            ]
+          },
+          "subStats": [
+            "atk",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://www.gc.com.cn/game/nikeshengyiwu.htm",
+        "https://news.17173.com/content/05202026/170833679.shtml"
+      ]
+    },
+    {
+      "name": "莉奈娅",
+      "level": 90,
+      "element": "geo",
+      "builds": [
+        {
+          "sets": [
+            "华馆梦醒形骸记",
+            "烬城勇者绘卷",
+            "晨星与月的晓歌",
+            "纺月的夜歌"
+          ],
+          "mainStats": {
+            "sands": [
+              "def"
+            ],
+            "goblet": [
+              "geo",
+              "def"
+            ],
+            "circlet": [
+              "def",
+              "cpct"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "def",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://shouyou.3dmgame.com/gl/616765.html",
+        "https://cg.163.com/static/content/69d714be1ae9d354a62f8855"
+      ]
+    },
+    {
+      "name": "哥伦比娅",
+      "level": 90,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "晨星与月的晓歌",
+            "纺月的夜歌"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "hp",
+            "recharge"
+          ]
+        },
+        {
+          "sets": [
+            "穹境示现之夜"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "hp",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "丝柯克",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "深廊终曲",
+            "逐影猎人",
+            "冰风迷途的勇士"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "cryo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "爱可菲",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "黄金剧团"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "cryo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "茜特菈莉",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "烬城勇者绘卷",
+            "教官"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "黑曜秘典",
+            "烬城勇者绘卷"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "cryo",
+              "mastery"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "玛薇卡",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "黑曜秘典",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "atk"
+          ]
+        },
+        {
+          "sets": [
+            "烬城勇者绘卷"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "克洛琳德",
+      "level": 90,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "来歆余响",
+            "谐律异想断章",
+            "角斗士的终幕礼"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "electro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "阿蕾奇诺",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "谐律异想断章",
+            "角斗士的终幕礼"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "那维莱特",
+      "level": 90,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp"
+            ],
+            "goblet": [
+              "hydro",
+              "hp"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "hp"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "纳西妲",
+      "level": 90,
+      "element": "dendro",
+      "builds": [
+        {
+          "sets": [
+            "深林的记忆",
+            "教官",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "dendro",
+              "mastery"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg",
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "cpct",
+            "cdmg",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "提纳里",
+      "level": 90,
+      "element": "dendro",
+      "builds": [
+        {
+          "sets": [
+            "饰金之梦",
+            "流浪大地的乐团",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "dendro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "atk"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "夜兰",
+      "level": 90,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "绝缘之旗印",
+            "昔日宗室之仪",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "hp"
+            ],
+            "goblet": [
+              "hp",
+              "hydro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "recharge",
+            "hp"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "八重神子",
+      "level": 90,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "黄金剧团",
+            "逐影猎人",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "electro",
+              "mastery"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "雷电将军",
+      "level": 90,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "绝缘之旗印",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk"
+            ],
+            "goblet": [
+              "electro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "宵宫",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "来歆余响",
+            "追忆之注连",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "枫原万叶",
+      "level": 90,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge",
+            "cpct"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "胡桃",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "炽烈的炎之魔女",
+            "追忆之注连",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "hp"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "hp",
+            "atk"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "刻晴",
+      "level": 90,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "如雷的盛怒",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "electro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "莫娜",
+      "level": 90,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "昔日宗室之仪",
+            "教官",
+            "烬城勇者绘卷",
+            "风起之日",
+            "绝缘之旗印"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk"
+            ],
+            "goblet": [
+              "hydro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "甘雨",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "流浪大地的乐团",
+            "冰风迷途的勇士",
+            "绝缘之旗印",
+            "昔日宗室之仪"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "cryo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "钟离",
+      "level": 90,
+      "element": "geo",
+      "builds": [
+        {
+          "sets": [
+            "千岩牢固",
+            "悠古的磐岩",
+            "昔日宗室之仪",
+            "教官"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp",
+              "atk"
+            ],
+            "goblet": [
+              "hp",
+              "geo"
+            ],
+            "circlet": [
+              "hp",
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "莱依拉",
+      "level": 90,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "千岩牢固",
+            "昔日宗室之仪",
+            "冰风迷途的勇士"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp"
+            ],
+            "goblet": [
+              "hp",
+              "cryo"
+            ],
+            "circlet": [
+              "hp",
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "recharge",
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "久岐忍",
+      "level": 90,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery",
+              "heal"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "hp"
+          ]
+        },
+        {
+          "sets": [
+            "千岩牢固"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "heal"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "mastery"
+          ],
+          "coreSubStats": [
+            "hp",
+            "mastery"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "班尼特",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "昔日宗室之仪",
+            "烬城勇者绘卷",
+            "教官"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "heal"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "hp",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "炽烈的炎之魔女",
+            "昔日宗室之仪"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "recharge",
+            "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "行秋",
+      "level": 90,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "绝缘之旗印",
+            "烬城勇者绘卷",
+            "昔日宗室之仪"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "recharge"
+            ],
+            "goblet": [
+              "hydro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "recharge",
+            "atk",
+            "mastery"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "香菱",
+      "level": 90,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "绝缘之旗印"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "recharge",
+            "atk",
+            "mastery"
+          ]
+        },
+        {
+          "sets": [
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge",
+            "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "沃雅妮莎",
+      "level": 80,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "千岩牢固"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "hp"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "hpPlus"
+          ]
+        }
+      ],
+      "sources": [
+        "https://shouyou.3dmgame.com/gl/637324.html",
+        "https://wiki.biligame.com/ys/%E6%B2%83%E9%9B%85%E5%A6%AE%E8%8E%8E/%E6%94%BB%E7%95%A5"
+      ]
+    },
+    {
+      "name": "梦见月瑞希",
+      "level": 80,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge",
+            "cpct"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "丽莎",
+      "level": 80,
+      "element": "electro",
+      "builds": [
+        {
+          "sets": [
+            "昔日宗室之仪",
+            "教官",
+            "绝缘之旗印"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk"
+            ],
+            "goblet": [
+              "electro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦",
+            "如雷的盛怒"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "希格雯",
+      "level": 70,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "昔时之歌",
+            "海染砗磲"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "hp"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "绝缘之旗印",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp",
+              "recharge"
+            ],
+            "goblet": [
+              "hp",
+              "hydro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "hp",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "迪卢克",
+      "level": 70,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "炽烈的炎之魔女",
+            "长夜之誓"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "烟绯",
+      "level": 70,
+      "element": "pyro",
+      "builds": [
+        {
+          "sets": [
+            "炽烈的炎之魔女",
+            "逐影猎人",
+            "长夜之誓"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "atk"
+            ],
+            "goblet": [
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "mastery",
+            "atk",
+            "recharge"
+          ]
+        },
+        {
+          "sets": [
+            "昔日宗室之仪",
+            "烬城勇者绘卷"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "hp",
+              "heal"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "recharge",
+            "cpct"
+          ],
+          "coreSubStats": [
+            "hp",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "砂糖",
+      "level": 70,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影",
+            "教官"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery",
+              "recharge"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "recharge",
+            "cpct"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "芭芭拉",
+      "level": 70,
+      "element": "hydro",
+      "builds": [
+        {
+          "sets": [
+            "昔时之歌",
+            "海染砗磲",
+            "教官"
+          ],
+          "mainStats": {
+            "sands": [
+              "hp",
+              "recharge"
+            ],
+            "goblet": [
+              "hp"
+            ],
+            "circlet": [
+              "heal"
+            ]
+          },
+          "subStats": [
+            "hp",
+            "recharge",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "乐园遗落之花",
+            "饰金之梦"
+          ],
+          "mainStats": {
+            "sands": [
+              "mastery"
+            ],
+            "goblet": [
+              "mastery"
+            ],
+            "circlet": [
+              "mastery",
+              "heal"
+            ]
+          },
+          "subStats": [
+            "mastery",
+            "hp",
+            "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "hp"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "恰斯卡",
+      "level": 60,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "黑曜秘典",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "atk",
+              "pyro"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "七七",
+      "level": 60,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "海染砗磲",
+            "昔时之歌",
+            "烬城勇者绘卷"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge"
+            ],
+            "goblet": [
+              "atk"
+            ],
+            "circlet": [
+              "heal"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "atk",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "海染砗磲",
+            "逐影猎人",
+            "长夜之誓"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk",
+              "mastery"
+            ],
+            "goblet": [
+              "phy",
+              "cryo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "闲云",
+      "level": 50,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影",
+            "昔时之歌",
+            "昔日宗室之仪"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk"
+            ],
+            "goblet": [
+              "atk"
+            ],
+            "circlet": [
+              "atk"
+            ]
+          },
+          "subStats": [
+            "atk",
+            "recharge",
+            "cpct"
+          ]
+        },
+        {
+          "sets": [
+            "长夜之誓",
+            "沙上楼阁史话"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "anemo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "琴",
+      "level": 50,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "atk"
+            ],
+            "goblet": [
+              "atk",
+              "anemo"
+            ],
+            "circlet": [
+              "heal",
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "atk",
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "神里绫华",
+      "level": 50,
+      "element": "cryo",
+      "builds": [
+        {
+          "sets": [
+            "冰风迷途的勇士",
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "cryo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "琳妮特",
+      "level": 50,
+      "element": "anemo",
+      "builds": [
+        {
+          "sets": [
+            "翠绿之影"
+          ],
+          "mainStats": {
+            "sands": [
+              "recharge",
+              "mastery"
+            ],
+            "goblet": [
+              "anemo",
+              "mastery"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg",
+              "mastery"
+            ]
+          },
+          "subStats": [
+            "recharge",
+            "mastery",
+            "cpct",
+            "cdmg",
+            "atk"
+          ]
+        },
+        {
+          "sets": [
+            "逐影猎人"
+          ],
+          "mainStats": {
+            "sands": [
+              "atk"
+            ],
+            "goblet": [
+              "anemo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "atk",
+            "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    },
+    {
+      "name": "诺艾尔",
+      "level": 50,
+      "element": "geo",
+      "builds": [
+        {
+          "sets": [
+            "华馆梦醒形骸记",
+            "逐影猎人",
+            "角斗士的终幕礼"
+          ],
+          "mainStats": {
+            "sands": [
+              "def"
+            ],
+            "goblet": [
+              "geo"
+            ],
+            "circlet": [
+              "cpct",
+              "cdmg"
+            ]
+          },
+          "subStats": [
+            "cpct",
+            "cdmg",
+            "def",
+            "recharge",
+            "atk"
+          ]
+        }
+      ],
+      "sources": [
+        "https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md"
+      ]
+    }
+  ]
+}

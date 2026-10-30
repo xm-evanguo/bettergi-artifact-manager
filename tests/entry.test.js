@@ -2,38 +2,46 @@ import { test, expect } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { analyze } from '../repo/js/ArtifactManager/lib/analyze.js';
 import { renderReport } from '../repo/js/ArtifactManager/lib/report.js';
-import { scanInventory } from '../repo/js/ArtifactManager/lib/scan.js';
+import { buildPlan } from '../repo/js/ArtifactManager/lib/plan.js';
+import { renderPlanReport } from '../repo/js/ArtifactManager/lib/plan-report.js';
+import { item, snapshot } from './helpers.js';
 
-/** 在受控函数内执行真实入口，宿主文件由内存替代；无需启动 BetterGI。 */
-function entry(settings = {}, overrides = {}) {
+/** 在受控函数内执行真实入口，宿主文件由内存替代；扫描器由替身代替，无需启动 BetterGI。 */
+function entry(settings = {}, { overrides = {}, scanned = snapshot([item('a')]) } = {}) {
   const root = new URL('../repo/js/ArtifactManager/', import.meta.url);
-  const memory = new Map(['data/demo-config.json', 'data/demo-snapshot.json', 'data/default-config.json'].map(p => [p, readFileSync(new URL(p, root), 'utf8')]));
+  const memory = new Map(['data/demo-config.json', 'data/demo-snapshot.json', 'data/builds.json'].map(p => [p, readFileSync(new URL(p, root), 'utf8')]));
   const file = { createDirectory: () => true, readTextSync: p => { if (!memory.has(p)) throw new Error(`文件不存在 ${p}`); return memory.get(p); }, isFile: p => memory.has(p), writeTextSync: (p, s) => { memory.set(p, s); return true; }, ...overrides };
+  const scanInventory = async (host, options) => { calls.push(options); return scanned; };
+  const calls = [];
   const code = readFileSync(new URL('main.js', root), 'utf8').replace(/^import .*;\n/gm, '').replace('await (async function main()', 'return (async function main()');
-  const run = new Function('analyze', 'renderReport', 'scanInventory', 'settings', 'file', 'log', code);
-  return { memory, promise: () => run(analyze, renderReport, scanInventory, settings, file, { info() {}, warn() {} }) };
+  const run = new Function('analyze', 'renderReport', 'scanInventory', 'buildPlan', 'renderPlanReport', 'settings', 'file', 'log', code);
+  return { memory, calls, promise: () => run(analyze, renderReport, scanInventory, buildPlan, renderPlanReport, settings, file, { info() {}, warn() {} }) };
 }
 
-test('真实默认入口生成 HTML 和 JSON，不访问游戏', async () => {
-  const e = entry(); const result = await e.promise();
+test('默认方式自动打开背包扫描，并生成计划与报告', async () => {
+  const e = entry();
+  const result = await e.promise();
+  expect(e.calls[0].autoOpen).toBe(true);
+  expect(e.calls[0].maxPages).toBeUndefined();
+  expect(e.memory.get(result.htmlPath)).toContain('圣遗物整理计划');
+  expect(JSON.parse(e.memory.get(result.jsonPath)).loadouts.length).toBeGreaterThan(0);
+});
+test('用上次扫描生成计划时没有扫描结果则报错', async () => {
+  await expect(entry({ mode: '用上次扫描生成计划' }).promise()).rejects.toThrow('还没有扫描结果');
+});
+test('用上次扫描生成计划不再操作游戏', async () => {
+  const e = entry({ mode: '用上次扫描生成计划' });
+  e.memory.set('saved_files/inventory.json', JSON.stringify(snapshot([item('a')])));
+  await e.promise();
+  expect(e.calls).toHaveLength(0);
+  expect(e.memory.has('saved_files/plan.html')).toBe(true);
+});
+test('示例报告不访问游戏', async () => {
+  const e = entry({ mode: '示例报告' });
+  const result = await e.promise();
+  expect(e.calls).toHaveLength(0);
   expect(e.memory.get(result.htmlPath)).toContain('圣遗物整理报告');
-  expect(JSON.parse(e.memory.get(result.jsonPath)).demo).toBe(true);
 });
-test('文件写入失败使入口报错，不输出成功结果', async () => {
-  const e = entry({}, { writeTextSync: () => false });
-  await expect(e.promise()).rejects.toThrow('保存报告失败');
-});
-test('快照路径不能越出保存目录', async () => {
-  await expect(entry({ mode: '分析快照', snapshotPath: '../../secrets.json' }).promise()).rejects.toThrow('输入文件须位于');
-});
-test('未配置角色的真实快照模式生成复查报告，不误用演示角色', async () => {
-  const e = entry({ mode: '分析快照' });
-  e.memory.set('saved_files/inventory.json', e.memory.get('data/demo-snapshot.json'));
-  const result = JSON.parse(e.memory.get((await e.promise()).jsonPath));
-  expect(result.demo).toBe(false); expect(result.counts.cleanup).toBe(0); expect(result.blockers.join()).toContain('持有角色');
-});
-test('真实模式拒绝误用示例角色规则', async () => {
-  const e = entry({ mode: '分析快照' });
-  e.memory.set('saved_files/config.json', e.memory.get('data/demo-config.json'));
-  await expect(e.promise()).rejects.toThrow('示例配置只能用于示例报告');
+test('文件写入失败使入口报错', async () => {
+  await expect(entry({}, { overrides: { writeTextSync: () => false } }).promise()).rejects.toThrow('保存');
 });

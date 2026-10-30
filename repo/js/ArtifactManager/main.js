@@ -1,13 +1,8 @@
 import { analyze } from './lib/analyze.js';
 import { renderReport } from './lib/report.js';
 import { scanInventory } from './lib/scan.js';
-
-/** 仅允许读取项目保存目录内的 JSON，避免设置中的相对路径逃逸。 */
-function savedJsonPath(value, fallback) {
-  const path = String(value || fallback).replace(/\\/g, '/');
-  if (!/^saved_files\/[A-Za-z0-9_\-.]+\.json$/.test(path) || path.includes('..')) throw new Error('输入文件须位于 saved_files，文件名只能含英文字母、数字、点、横线和下划线。');
-  return path;
-}
+import { buildPlan } from './lib/plan.js';
+import { renderPlanReport } from './lib/plan-report.js';
 
 /** 宿主方法只在该适配器内访问；决策层可在 Bun 中独立验证。 */
 function makeHost(checkpointPath) {
@@ -17,44 +12,54 @@ function makeHost(checkpointPath) {
     click: async (x, y) => { click(x, y); },
     move: async (x, y) => { moveMouseTo(x, y); },
     scroll: async n => { verticalScroll(n); },
+    keyPress: async key => { keyPress(key); },
+    returnMainUi: () => genshin.returnMainUi(),
     sleep: ms => sleep(ms),
     checkpoint: async snapshot => { if (!file.writeTextSync(checkpointPath, JSON.stringify(snapshot, null, 2))) throw new Error('保存扫描进度失败，停止读取。'); },
   };
 }
 
-/** BetterGI 标准脚本入口；默认运行虚构库存示例，不操作游戏。 */
+/** 写文件失败时报错，避免输出不存在的结果路径。 */
+function write(path, text) {
+  if (!file.writeTextSync(path, text)) throw new Error(`保存 ${path} 失败。`);
+}
+
+/** 由库存快照生成整理计划、报告和分解筛选脚本。 */
+function plan(snapshot) {
+  const result = buildPlan(snapshot, JSON.parse(file.readTextSync('data/builds.json')));
+  write('saved_files/plan.json', JSON.stringify(result, null, 2));
+  write('saved_files/plan.html', renderPlanReport(result));
+  write('saved_files/salvage-filter.js', result.salvage.js);
+  const c = result.counts;
+  log.info(`计划已生成：saved_files/plan.html。保留 ${c.keep}，待强化 ${c.upgrade}，分解 ${c.discard}，待复查 ${c.review}，材料 ${c.fodder}。`);
+  if (result.blockers.length) log.warn(`分解清单已关闭：${result.blockers.join('；')}`);
+  return { htmlPath: 'saved_files/plan.html', jsonPath: 'saved_files/plan.json' };
+}
+
+/** BetterGI 标准脚本入口。默认自动打开背包扫描全部圣遗物并生成计划；只读取，不分解、不强化。 */
 await (async function main() {
   const opts = typeof settings === 'undefined' ? {} : settings;
   if (!file.createDirectory('saved_files')) throw new Error('无法建立 saved_files 目录。');
-  const mode = String(opts.mode || '示例报告');
-  let config, snapshot;
-  if (mode === '示例报告') {
-    config = JSON.parse(file.readTextSync('data/demo-config.json'));
-    snapshot = JSON.parse(file.readTextSync('data/demo-snapshot.json'));
-  } else {
-    const configPath = savedJsonPath(opts.configPath, 'saved_files/config.json');
-    config = JSON.parse(file.readTextSync(file.isFile(configPath) ? configPath : 'data/default-config.json'));
-    if (config.demo === true) throw new Error('示例配置只能用于示例报告，请从 default-config.json 创建真实配置。');
-    const names = value => String(value || '').split(/[,，、\n]/).map(s => s.trim()).filter(Boolean);
-    const main = names(opts.mainCharacters), reserve = names(opts.reserveCharacters);
-    if (main.length || reserve.length) config.characters = [...main.map(name => ({ name, priority: 'main' })), ...reserve.map(name => ({ name, priority: 'reserve' }))];
-    if (String(opts.targetFreeSlots || '').trim()) config.targetFreeSlots = Number(opts.targetFreeSlots);
-    config.demo = false;
-    if (mode === '实验扫描') {
-      const checkpoint = `saved_files/scan-${Date.now()}.json`;
-      snapshot = await scanInventory(makeHost(checkpoint), { prepared: opts.prepared === true, maxPages: Number(opts.maxPages || 1) });
-      log.info(`原始扫描已保存：${checkpoint}`);
-    } else if (mode === '分析快照') {
-      snapshot = JSON.parse(file.readTextSync(savedJsonPath(opts.snapshotPath, 'saved_files/inventory.json')));
-    } else throw new Error('未知运行模式。');
+  const mode = String(opts.mode || '扫描并生成计划');
+  if (mode === '扫描并生成计划') {
+    const pages = String(opts.maxPages || '').trim();
+    const snapshot = await scanInventory(makeHost('saved_files/inventory.json'), { autoOpen: true, maxPages: pages ? Number(pages) : undefined });
+    log.info(`扫描结束：${snapshot.artifacts.length}/${snapshot.scan.total ?? '?'} 件，已保存 saved_files/inventory.json。`);
+    if (snapshot.scan.issues.length) log.warn(`扫描问题：${snapshot.scan.issues.join('；')}`);
+    return plan(snapshot);
   }
-  const result = analyze(snapshot, config);
-  const stamp = Date.now();
-  const htmlPath = `saved_files/report-${stamp}.html`;
-  const jsonPath = `saved_files/report-${stamp}.json`;
-  if (!file.writeTextSync(jsonPath, JSON.stringify(result, null, 2)) || !file.writeTextSync(htmlPath, renderReport(result))) throw new Error('保存报告失败。');
-  log.info(`报告已生成：${htmlPath}`);
-  log.info(`保留 ${result.counts.keep}，优先试强化 ${result.counts.upgrade}，可清理 ${result.counts.cleanup}，待复查 ${result.counts.review}。`);
-  if (result.blockers.length) log.warn(`清理建议已关闭：${result.blockers.join('；')}`);
-  return { htmlPath, jsonPath };
+  if (mode === '用上次扫描生成计划') {
+    if (!file.isFile('saved_files/inventory.json')) throw new Error('还没有扫描结果，请先选择「扫描并生成计划」。');
+    return plan(JSON.parse(file.readTextSync('saved_files/inventory.json')));
+  }
+  if (mode === '示例报告') {
+    const result = analyze(JSON.parse(file.readTextSync('data/demo-snapshot.json')), JSON.parse(file.readTextSync('data/demo-config.json')));
+    const stamp = Date.now();
+    const htmlPath = `saved_files/report-${stamp}.html`, jsonPath = `saved_files/report-${stamp}.json`;
+    write(jsonPath, JSON.stringify(result, null, 2));
+    write(htmlPath, renderReport(result));
+    log.info(`示例报告已生成：${htmlPath}`);
+    return { htmlPath, jsonPath };
+  }
+  throw new Error('未知运行模式。');
 })();

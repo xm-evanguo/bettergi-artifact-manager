@@ -1,5 +1,5 @@
 {
-  "time": "20261030071601",
+  "time": "20261030090314",
   "url": "https://github.com/xm-evanguo/bettergi-artifact-manager/archive/refs/heads/release.zip",
   "file": "repo.json",
   "indexes": [
@@ -10,8 +10,8 @@
         {
           "name": "ArtifactManager",
           "type": "directory",
-          "version": "0.1.1",
-          "description": "圣遗物整理助手（本地原型）~|~读取快照并输出保留、试强化与清理建议。默认演示模式；实验扫描仅采集数据，不分解、不强化。",
+          "version": "0.2.0",
+          "description": "圣遗物整理助手~|~自动打开背包扫描全部圣遗物，按角色配装生成每个角色一套的整理计划、强化清单和分解筛选脚本。只读取，不分解、不强化。",
           "author": "本地项目",
           "authors": [
             {
@@ -21,8 +21,8 @@
           "tags": [
             "bgi≥0.66.0"
           ],
-          "lastUpdated": "2026-10-30 07:16:01",
-          "contentHash": "5725a13bacf970579e048c472448e141e2a72f3fcdfb7da0c8643c84f2872c6c"
+          "lastUpdated": "2026-10-30 09:03:14",
+          "contentHash": "9fc2ecf86d86c55c6068fdfb6bfeddc4251d09d713b8c5fa58bdbd3823898e35"
         }
       ]
     }

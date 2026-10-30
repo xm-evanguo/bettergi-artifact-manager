@@ -1,10 +1,4 @@
 [
-  { "name": "mode", "type": "select", "label": "运行方式（默认演示不操作游戏）", "options": ["示例报告", "分析快照", "实验扫描"], "default": "示例报告" },
-  { "name": "mainCharacters", "type": "input-text", "label": "主力角色，用逗号分隔；留空使用配置文件", "default": "" },
-  { "name": "reserveCharacters", "type": "input-text", "label": "备用角色，用逗号分隔；玩法规则需在配置文件中核对", "default": "" },
-  { "name": "targetFreeSlots", "type": "input-text", "label": "整理后期望的空位数；留空使用配置文件", "default": "" },
-  { "name": "configPath", "type": "input-text", "label": "配置文件（可从 data/default-config.json 复制）", "default": "saved_files/config.json" },
-  { "name": "snapshotPath", "type": "input-text", "label": "分析快照模式的输入文件", "default": "saved_files/inventory.json" },
-  { "name": "prepared", "type": "checkbox", "label": "实验扫描：已手动打开简体中文圣遗物背包、取消筛选并滚到顶部，画面为 1920×1080", "default": false },
-  { "name": "maxPages", "type": "input-text", "label": "实验扫描页数（建议首轮 1 页；扫描结果默认不完整）", "default": "1" }
+  { "name": "mode", "type": "select", "label": "运行方式（扫描只读取，不分解、不强化）", "options": ["扫描并生成计划", "用上次扫描生成计划", "示例报告"], "default": "扫描并生成计划" },
+  { "name": "maxPages", "type": "input-text", "label": "最多扫描页数（每页 40 件；留空扫描全部，只有全部扫完才会生成分解清单）", "default": "" }
 ]

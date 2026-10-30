@@ -1,6 +1,6 @@
 {
   "name": "bettergi-artifact-manager",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "BetterGI 圣遗物整理脚本本地原型",
@@ -9,6 +9,7 @@
     "check": "bun tools/check.js",
     "demo": "bun tools/analyze.js repo/js/ArtifactManager/data/demo-snapshot.json repo/js/ArtifactManager/data/demo-config.json output/demo",
     "data": "bun tools/build-miao-data.js",
-    "build:repo": "bun tools/build-repo.js"
+    "build:repo": "bun tools/build-repo.js",
+    "plan": "bun tools/plan.js"
   }
 }
