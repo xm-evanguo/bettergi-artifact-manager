@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { buildPlan } from '../repo/js/ArtifactManager/lib/plan.js';
+import { buildPlan, expectedFinal } from '../repo/js/ArtifactManager/lib/plan.js';
 import { renderPlanReport } from '../repo/js/ArtifactManager/lib/plan-report.js';
 import { item, snapshot } from './helpers.js';
 
@@ -215,3 +215,26 @@ describe('配装分配与清单', () => {
     expect(html).toContain('雷电将军');
   });
 });
+
+describe('刷取优先级', () => {
+  test('期望满级面板：主词条取满级值，剩余次数平均分到副词条', () => {
+    const a = item('x', { level: 0, main: { key: 'cpct', value: 4.7 }, subs: [sub('cdmg', 1), sub('atk', 1), sub('def', 1), sub('hp', 1)] });
+    const f = expectedFinal(a);
+    expect(f.level).toBe(20);
+    expect(f.main.value).toBe(31.1);
+    expect(f.subs[0].value).toBeCloseTo(7.8 + 5 / 4 * 0.85 * 7.77, 1);
+    const three = expectedFinal({ ...a, subs: [sub('cdmg', 1), sub('atk', 1), { ...sub('def', 1), active: false }] });
+    expect(three.subs.every(s => s.active)).toBe(true);
+    expect(three.subs[0].value).toBeCloseTo(7.8 + 4 / 3 * 0.85 * 7.77, 1);
+  });
+  test('按强化后预计总分从低到高排列，报告列出刷取表', () => {
+    const plan = buildPlan(snapshot([...fullSet('a', 4), ...fullSet('b', 1)]), builds([{ name: '雷电将军', level: 90 }, { name: '刻晴', level: 80 }]));
+    expect(plan.farming).toHaveLength(2);
+    expect(plan.farming[0].total).toBeLessThan(plan.farming[1].total);
+    expect(plan.farming[0].name).toBe('刻晴');
+    const html = renderPlanReport(plan);
+    expect(html).toContain('需要刷的圣遗物');
+    expect(html).toContain('按套装汇总');
+  });
+});
+

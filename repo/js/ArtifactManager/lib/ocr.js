@@ -10,6 +10,13 @@ const MAIN_CURVE = {
 };
 const ELEM_KEYS = ['pyro', 'hydro', 'cryo', 'electro', 'anemo', 'geo', 'dendro'];
 
+/** 主词条满级数值；未知词条或星级返回 null。 */
+export function mainAtMax(key, rarity) {
+  const c = MAIN_CURVE[rarity];
+  const v = c?.[ELEM_KEYS.includes(key) ? 'elem' : key];
+  return v ? v[1] : null;
+}
+
 /**
  * 按主词条数值反推星级；两种星级都对不上（误差超过 6%）时返回 null。
  * +17 以上只可能是五星，但仍核对五星曲线，避免主词条数值误读后被当作有效数据。

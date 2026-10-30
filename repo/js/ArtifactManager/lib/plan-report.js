@@ -19,6 +19,20 @@ export function renderPlanReport(plan) {
       const core = r.category === 'upgrade' && r.core ? `核心副词条：${r.core.length ? r.core.join('、') : '无要求（主词条已满足）'}` : '';
       return `<li><strong>${e(r.name || r.id)}</strong> · ${e(r.set)} · ${e(SLOT_NAMES[r.slot] || '?')} +${e(r.level)}${r.character ? ` · ${e(r.character)}` : ''}<br><small>${e(stats)}</small>${core ? `<br><small>${e(core)}</small>` : ''}<br><small>${e([where, ...r.reasons].filter(Boolean).join('；'))}</small></li>`;
     }).join('') || '<li>无</li>';
+  // 刷取优先级：按强化后预计总分从低到高；再按套装汇总未毕业部位的差距。
+  const farming = plan.farming || [];
+  const farmRows = farming.map((f, i) => {
+    const weak = f.slots.filter(s => !s.graduated).map(s => `${SLOT_NAMES[s.slot]} ${s.projected.toFixed(1)}`).join('、') || '全部毕业';
+    return `<tr><td>${i + 1}</td><th>${e(f.name)}</th><td>${e(f.set)}${f.complete ? '' : '<br><small>未凑齐 4 件套</small>'}</td><td>${f.now.toFixed(1)}</td><td><strong>${f.total.toFixed(1)}</strong></td><td>${e(weak)}</td></tr>`;
+  }).join('');
+  const bySet = new Map();
+  for (const f of farming) for (const s of f.slots.filter(x => !x.graduated)) {
+    const v = bySet.get(f.set) || { gap: 0, slots: 0, names: new Set() };
+    v.gap += plan.graduateScore - s.projected; v.slots++; v.names.add(f.name);
+    bySet.set(f.set, v);
+  }
+  const setRows = [...bySet].sort((x, y) => y[1].gap - x[1].gap)
+    .map(([set, v]) => `<tr><th>${e(set)}</th><td>${v.slots}</td><td>${v.gap.toFixed(1)}</td><td>${e([...v.names].join('、'))}</td></tr>`).join('');
   const labels = { keep: '保留', upgrade: '待强化', discard: '分解', review: '待复查', fodder: '材料' };
   return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"><title>圣遗物整理计划</title><style>
 body{font:15px/1.6 system-ui,sans-serif;color:#20313b;background:#f4f5f1;margin:0}main{max-width:1200px;margin:auto;padding:28px 16px}h1{margin:0 0 4px}h2{margin-top:32px}.cards{display:flex;flex-wrap:wrap;gap:12px;margin:20px 0}.card{flex:1;min-width:100px;background:#fff;padding:14px;border:1px solid #d5ded7;border-radius:8px}.card strong{display:block;font-size:26px}.notice{border-left:4px solid #b85c1c;background:#fff0dc;padding:12px 16px}.wrap{overflow-x:auto}table{border-collapse:collapse;background:#fff;width:100%;min-width:720px}th,td{border:1px solid #dce3de;padding:8px;text-align:left;vertical-align:top}thead th{background:#e3ebe4}td.done{background:#e4f3e7}td.empty{color:#a33}small{color:#52626c}textarea{width:100%;min-height:140px;font:12px monospace}li{margin:6px 0}
@@ -26,6 +40,10 @@ body{font:15px/1.6 system-ui,sans-serif;color:#20313b;background:#f4f5f1;margin:
 ${plan.blockers.length ? `<div class="notice"><strong>分解清单已关闭</strong><ul>${plan.blockers.map(b => `<li>${e(b)}</li>`).join('')}</ul></div>` : ''}
 <div class="cards">${Object.entries(labels).map(([k, v]) => `<div class="card">${v}<strong>${plan.counts[k]}</strong></div>`).join('')}</div>
 <h2>每个角色的目标配装</h2><div class="wrap"><table><thead><tr><th>角色</th>${SLOT_NAMES.map(n => `<th>${n}</th>`).join('')}</tr></thead><tbody>${loadouts}</tbody></table></div>
+<h2>需要刷的圣遗物</h2><p><small>每个部位取当前件与强化候选件强化到满级的期望分中较高者（期望按平均强化估算，不是实际结果），按角色总分从低到高排列。满分约 ${e((66 * 5).toFixed(0))}，毕业线每件 ${e(plan.graduateScore)}。</small></p>
+<div class="wrap"><table><thead><tr><th>#</th><th>角色</th><th>刷取套装</th><th>当前总分</th><th>强化后预计</th><th>未毕业部位（预计分）</th></tr></thead><tbody>${farmRows}</tbody></table></div>
+<h3>按套装汇总</h3><p><small>差距 = 各未毕业部位距毕业线的分数之和，越大越值得刷。</small></p>
+<div class="wrap"><table><thead><tr><th>套装</th><th>未毕业部位数</th><th>差距</th><th>相关角色</th></tr></thead><tbody>${setRows || '<tr><td colspan="4">无</td></tr>'}</tbody></table></div>
 <h2>待强化（${plan.counts.upgrade}）</h2><p><small>+4、+8、+12 三次中歪两次即停止；+12 时最多歪一次则强化到满级（五星 +20，四星 +16）。</small></p><ul>${list('upgrade')}</ul>
 <h2>分解（${plan.counts.discard}）</h2><ul>${list('discard')}</ul>
 ${plan.counts.discard ? `<h2>BetterGI 自动分解筛选脚本</h2><p><small>复制到 BetterGI「自动分解」的 JavaScript 设置中。只匹配上面分解清单里属性完全一致的圣遗物。${plan.salvage.skipped.length ? `有 ${plan.salvage.skipped.length} 件因库存中存在同属性保留件而跳过。` : ''}</small></p><textarea readonly>${e(plan.salvage.js)}</textarea>` : ''}

@@ -1,4 +1,5 @@
-import { normalizeSnapshot, SLOT_NAMES } from './model.js';
+import { normalizeSnapshot, SLOT_NAMES, MAX_ROLL } from './model.js';
+import { mainAtMax } from './ocr.js';
 import { referenceScore, grade, gradeMin, potential, weightsFor, buildWeights } from './scoring.js';
 import { coreFor, coreForPiece, hasCore, estimateMisses, MAX_MISSES } from './upgrade.js';
 import { buildSalvageFilter } from './salvage-filter.js';
@@ -17,6 +18,25 @@ const MAX_LEVEL = { 5: 20, 4: 16 };
 
 /** 每个未毕业部位最多保留的强化候选数。 */
 const UPGRADE_PER_SLOT = 2;
+
+/**
+ * 强化到满级的期望面板，只用于刷取排序：主词条取满级数值；剩余强化次数先激活待激活词条，
+ * 其余按平均值（单次最大值的 0.85 倍）平均分到已有副词条上。不是实际强化结果。
+ */
+export function expectedFinal(a) {
+  const max = MAX_LEVEL[a.rarity];
+  if (!max || a.level >= max) return a;
+  let rolls = max / 4 - Math.floor(a.level / 4);
+  const subs = a.subs.map(s => ({ ...s }));
+  if (subs.filter(s => s.active).length < 4) {
+    const pending = subs.find(s => !s.active);
+    if (pending) pending.active = true;
+    rolls--;
+  }
+  const active = subs.filter(s => s.active);
+  for (const s of active) s.value += rolls / active.length * 0.85 * MAX_ROLL[s.key];
+  return { ...a, level: max, main: { ...a.main, value: mainAtMax(a.main.key, a.rarity) ?? a.main.value }, subs };
+}
 
 /** 圣遗物主词条是否符合某套配装；花和羽主词条固定，总是符合。 */
 function mainFits(a, build) {
@@ -133,6 +153,21 @@ export function buildPlan(input, buildsDoc) {
     }
   }
 
+  // 刷取优先级：每个部位取「当前件」与「强化候选件」强化到满级的期望分中较高者，
+  // 按角色总分从低到高排序；分数低的角色最需要继续刷对应套装。
+  const farming = loadouts.map(lo => {
+    const c = characters.find(x => x.name === lo.name);
+    const build = c.builds[lo.build];
+    const weights = buildWeights(c, build);
+    const slots = lo.slots.map(s => {
+      const pieces = [...upgrades].filter(([, u]) => u.character === c.name && u.slot === s.slot).map(([id]) => usable.find(a => a.id === id));
+      const projected = Math.max(s.score, ...pieces.map(a => referenceScore(expectedFinal(a), c, weights) ?? 0));
+      return { slot: s.slot, now: s.score, projected: Math.round(projected * 10) / 10, graduated: projected >= threshold };
+    });
+    const total = Math.round(slots.reduce((n, s) => n + s.projected, 0) * 10) / 10;
+    return { name: lo.name, set: lo.set || build.sets[0], complete: lo.complete, now: Math.round(lo.slots.reduce((n, s) => n + s.score, 0) * 10) / 10, total, slots };
+  }).sort((x, y) => x.total - y.total);
+
   const records = snapshot.artifacts.map(a => {
     const base = { id: a.id, name: a.name, set: a.set, slot: a.slot, level: a.level, rarity: a.rarity, main: a.main, subs: a.subs, location: a.location, locked: a.locked, equippedBy: a.equippedBy };
     if (a.issues.length) return { ...base, category: 'review', reasons: a.issues };
@@ -173,6 +208,7 @@ export function buildPlan(input, buildsDoc) {
     blockers,
     counts,
     loadouts,
+    farming,
     records,
     salvage: { js: salvage.js, skipped: salvage.skipped.map(a => a.id) },
   };
