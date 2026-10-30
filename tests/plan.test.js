@@ -89,6 +89,33 @@ describe('配装分配与清单', () => {
     const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })]), builds());
     expect(plan.records.find(r => r.id === 'four').category).toBe('fodder');
   });
+  test('配装点名的四星套装参与分配，五星套装的四星版本仍作材料', () => {
+    const doc = builds();
+    doc.characters[0].builds = [{ sets: ['教官'], mainStats: { sands: ['recharge'], goblet: ['electro'], circlet: ['cpct'] }, subStats: ['cpct', 'cdmg'] }];
+    const four = fullSet('t').map(a => ({ ...a, set: '教官', rarity: 4, level: 16, main: { ...a.main, value: { hpPlus: 3571, atkPlus: 232, recharge: 38.7, electro: 34.8, cpct: 23.2 }[a.main.key] } }));
+    const plan = buildPlan(snapshot(four), doc);
+    expect(plan.loadouts[0].complete).toBe(true);
+    expect(plan.counts.keep).toBe(5);
+  });
+  test('另写核心副词条的玩法按自身副词条评分', () => {
+    const doc = builds();
+    doc.characters[0].builds = [{ sets: ['乐园遗落之花'], mainStats: { sands: ['mastery'], goblet: ['mastery'], circlet: ['mastery'] }, subStats: ['mastery'], coreSubStats: ['mastery'] }];
+    const subs = [sub('mastery', 5), sub('atk', 1), sub('def', 1), sub('hp', 1)];
+    const main = [{ key: 'hpPlus', value: 4780 }, { key: 'atkPlus', value: 311 }, { key: 'mastery', value: 187 }, { key: 'mastery', value: 187 }, { key: 'mastery', value: 187 }];
+    const other = [sub('cpct', 1), sub('atk', 1), sub('def', 1), sub('hp', 5)];
+    const set = main.map((m, slot) => item(`m${slot}`, { slot, set: '乐园遗落之花', main: m, subs: slot < 2 ? subs : other }));
+    const plan = buildPlan(snapshot(set), doc);
+    // 按 miao 默认权重雷电不需要精通，花羽只有 1 次攻击力有效；按精通玩法评分应明显更高。
+    expect(plan.loadouts[0].slots.every(x => x.id)).toBe(true);
+    expect(plan.loadouts[0].slots[0].score).toBeGreaterThan(30);
+  });
+  test('四件套之外的散件部位接受其他套装的强化候选', () => {
+    const set = fullSet('a', 1).slice(0, 4);
+    const circlet = c => item(c, { slot: 4, set: '黄金剧团', level: c === 'off' ? 20 : 0, main: { key: 'cdmg', value: c === 'off' ? 62.2 : 9.3 }, subs: [sub('cpct', 1), sub('atk', 1), sub('def', 1), ...(c === 'off' ? [sub('hp', 5)] : [])] });
+    const plan = buildPlan(snapshot([...set, circlet('off'), circlet('cand')]), builds());
+    expect(plan.records.find(r => r.id === 'off').category).toBe('keep');
+    expect(plan.records.find(r => r.id === 'cand').category).toBe('upgrade');
+  });
   test('扫描未确认完整时不生成分解清单', () => {
     const extra = item('x', { subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
     const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());

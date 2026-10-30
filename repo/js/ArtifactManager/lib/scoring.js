@@ -7,6 +7,25 @@ export function characterWeights(name) {
   return w ? { ...w } : null;
 }
 
+/**
+ * 某套玩法的评分权重。默认玩法（未写 coreSubStats）沿用 miao 角色权重；
+ * 另写了 coreSubStats 的玩法（如雷电精通流）按配装声明重建：核心副词条 100，
+ * 其余副词条按列出顺序 75、60、45…（最低 30），主词条要求的属性至少 100。
+ */
+export function buildWeights(character, build) {
+  if (!build?.coreSubStats?.length) return characterWeights(character.name);
+  const w = {};
+  build.subStats.filter(k => !build.coreSubStats.includes(k)).forEach((k, i) => { w[k] = Math.max(30, 75 - 15 * i); });
+  for (const k of build.coreSubStats) w[k] = 100;
+  for (const k of Object.values(build.mainStats || {}).flat()) {
+    const key = ELEMENTS.includes(k) ? 'dmg' : k;
+    w[key] = Math.max(w[key] || 0, 100);
+  }
+  return w;
+}
+
+const ELEMENTS = ['pyro', 'hydro', 'cryo', 'electro', 'anemo', 'geo', 'dendro'];
+
 /** 可出现在副词条上的百分比与精通、充能、双暴键，用于判断核心副词条。 */
 const CORE_CANDIDATES = ['hp', 'atk', 'def', 'mastery', 'recharge', 'cpct', 'cdmg'];
 
@@ -40,7 +59,7 @@ export function gradeMin(name) {
 
 /** 将大小词条分开，固定数值仅作保守排序；不能用该分数单独清理。 */
 export function weightsFor(build, character) {
-  const w = { ...(characterWeights(character.name) || {}), ...(build.weights || {}) };
+  const w = { ...(buildWeights(character, build) || {}), ...(build.weights || {}) };
   return { ...w, hpPlus: w.hpPlus ?? (w.hp || 0) * 0.3, atkPlus: w.atkPlus ?? (w.atk || 0) * 0.3, defPlus: w.defPlus ?? (w.def || 0) * 0.3 };
 }
 
@@ -50,7 +69,8 @@ export function potential(artifact, weights) {
   const pending = artifact.subs.find(s => !s.active);
   const merit = s => s.value / MAX_ROLL[s.key] * (weights[s.key] || 0) / 100;
   const current = active.reduce((n, s) => n + merit(s), 0);
-  const steps = artifact.rarity === 5 ? 5 - Math.floor(artifact.level / 4) : 0;
+  const maxLevel = { 5: 20, 4: 16 }[artifact.rarity] || 0;
+  const steps = maxLevel ? maxLevel / 4 - Math.floor(artifact.level / 4) : 0;
   let pool = active.map(s => (weights[s.key] || 0) / 100);
   let activation = 0;
   let upgradeSteps = steps;
@@ -59,7 +79,7 @@ export function potential(artifact, weights) {
     pool.push(pending ? (weights[pending.key] || 0) / 100 : activation);
     upgradeSteps--;
   }
-  return { current, ceiling: current + activation + Math.max(0, ...pool) * upgradeSteps, nextLevel: steps > 0 ? Math.min(20, (Math.floor(artifact.level / 4) + 1) * 4) : null };
+  return { current, ceiling: current + activation + Math.max(0, ...pool) * upgradeSteps, nextLevel: steps > 0 ? Math.min(maxLevel, (Math.floor(artifact.level / 4) + 1) * 4) : null };
 }
 
 // 以下参考分按 miao-plugin（MIT）models/artis/ArtisMark.js 与 ArtisMarkCfg.js 的公式移植。
@@ -92,9 +112,8 @@ function slotMax(attrs, mainKey, countMain = true) {
   return (countMain ? attrs[mainKey]?.fixWeight || 0 : 0) * 2 + topKeys(attrs, SUB_KEYS, 4, mainKey).reduce((n, k, i) => n + attrs[k].fixWeight * (i ? 1 : 6), 0);
 }
 
-/** 参考分，0 至 66 为常规范围；未知角色返回 null，未激活词条不计入。 */
-export function referenceScore(a, character) {
-  const weights = characterWeights(character.name);
+/** 参考分，0 至 66 为常规范围；未知角色返回 null，未激活词条不计入。weights 默认为角色 miao 权重。 */
+export function referenceScore(a, character, weights = characterWeights(character.name)) {
   if (!weights) return null;
   const info = miao.characters[character.name] || {};
   const attrs = markTable(weights, info.baseAttr || undefined);

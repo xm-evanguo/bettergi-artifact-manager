@@ -10,10 +10,12 @@ const MAIN_CURVE = {
 };
 const ELEM_KEYS = ['pyro', 'hydro', 'cryo', 'electro', 'anemo', 'geo', 'dendro'];
 
-/** 按主词条数值反推星级；两种星级都对不上（误差超过 6%）时返回 null。 */
+/**
+ * 按主词条数值反推星级；两种星级都对不上（误差超过 6%）时返回 null。
+ * +17 以上只可能是五星，但仍核对五星曲线，避免主词条数值误读后被当作有效数据。
+ */
 export function rarityFromMain(key, level, value) {
   if (!Number.isFinite(value) || !Number.isInteger(level)) return null;
-  if (level > 16) return 5;
   const curveKey = ELEM_KEYS.includes(key) ? 'elem' : key;
   let best = null;
   for (const rarity of [5, 4]) {

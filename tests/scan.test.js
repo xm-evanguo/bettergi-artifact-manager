@@ -1,15 +1,15 @@
 import { test, expect, describe } from 'bun:test';
-import { scanInventory, pageCells } from '../repo/js/ArtifactManager/lib/scan.js';
+import { scanInventory } from '../repo/js/ArtifactManager/lib/scan.js';
 import { parsePanel, rarityFromMain } from '../repo/js/ArtifactManager/lib/ocr.js';
 
 /** 第 n 件的虚构面板；数值不同以便区分每一件。 */
 const panel = (n, extra = '') => `虚构之花\n生之花\n生命值\n4,780\n+20\n暴击率+${(3.1 + n / 10).toFixed(1)}%\n暴击伤害+7.8%\n攻击力+5.8%\n元素充能效率+6.5%\n绝缘之旗印:\n2件套:元素充能效率提高20%${extra}`;
 
 /**
- * 模拟背包：8 列网格，每页 5 行；滚 49 格前进 5 行，滚到底时与底部对齐。
+ * 模拟背包：8 列网格，每页 5 行；每滚 39 格前进 scrollRows 行，滚到底时与底部对齐。
  * 只记录点击、滚动与检查点，不发送任何系统输入。
  */
-function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrollRows = 5 } = {}) {
+function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrollRows = 4 } = {}) {
   const items = Array.from({ length: count }, (_, i) => panel(i));
   const totalRows = Math.ceil(count / 8);
   const state = { clicks: 0, scrolls: 0, saves: [], offset: 0, ticks: 0, selected: null, reads: 0, opened: false };
@@ -31,7 +31,7 @@ function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrol
     move: async () => {},
     scroll: async n => {
       state.scrolls++;
-      if (n < 0 && ++state.ticks === 49) { state.ticks = 0; state.offset = Math.min(state.offset + scrollRows, Math.max(0, totalRows - 5)); }
+      if (n < 0 && ++state.ticks === 39) { state.ticks = 0; state.offset = Math.min(state.offset + scrollRows, Math.max(0, totalRows - 5)); }
     },
     sleep: async () => {},
     checkpoint: async s => { state.saves.push(structuredClone(s)); },
@@ -64,12 +64,24 @@ describe('背包扫描', () => {
     expect(r.scan.complete).toBe(true);
     expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
   });
-  test('滚动少一行时衔接核对失败并停止，不宣称完整', async () => {
-    const { host } = fakeBag({ count: 120, scrollRows: 4 });
+  test('滚动过多（超过 4 行）时没有重叠，停止且不宣称完整', async () => {
+    const { host } = fakeBag({ count: 120, scrollRows: 6 });
     const r = await scanInventory(host);
     expect(r.scan.complete).toBe(false);
     expect(r.artifacts).toHaveLength(40);
-    expect(r.scan.issues.join()).toContain('翻页');
+    expect(r.scan.issues.join()).toContain('没有重叠');
+  });
+  test('滚动不足时按重叠位置续读，不重复也不漏件', async () => {
+    const { host, items } = fakeBag({ count: 120, scrollRows: 2 });
+    const r = await scanInventory(host);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+  });
+  test('滚动未前进时停止', async () => {
+    const { host } = fakeBag({ count: 120, scrollRows: 0 });
+    const r = await scanInventory(host);
+    expect(r.scan.complete).toBe(false);
+    expect(r.scan.issues.join()).toContain('未前进');
   });
   test('面板不稳定时停止，不能继续下一件', async () => {
     const { host, state } = fakeBag({ unstable: true });
@@ -85,12 +97,6 @@ describe('背包扫描', () => {
     const { host } = fakeBag({ count: 50 });
     const r = await scanInventory(host, { maxPages: 1 });
     expect(r.artifacts).toHaveLength(40); expect(r.scan.complete).toBe(false); expect(r.scan.issues.join()).toContain('40/50');
-  });
-  test('末页格子按底部对齐倒推', () => {
-    const cells = pageCells(2, 93);
-    expect(cells).toHaveLength(13);
-    expect(cells.at(-1)).toMatchObject({ row: 4, col: 4, ordinal: 93 });
-    expect(cells[0]).toMatchObject({ row: 3, col: 0, ordinal: 81 });
   });
 });
 
@@ -110,5 +116,8 @@ describe('面板解析', () => {
     expect(rarityFromMain('cpct', 16, 26.8)).toBe(5);
     expect(rarityFromMain('pyro', 20, 46.6)).toBe(5);
     expect(rarityFromMain('hpPlus', 0, 1000)).toBeNull();
+    // +17 以上只可能是五星，但主词条数值仍须符合五星曲线。
+    expect(rarityFromMain('cpct', 20, 31.1)).toBe(5);
+    expect(rarityFromMain('cpct', 20, 5)).toBeNull();
   });
 });

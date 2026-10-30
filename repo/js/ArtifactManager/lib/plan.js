@@ -1,10 +1,16 @@
 import { normalizeSnapshot, SLOT_NAMES } from './model.js';
-import { referenceScore, grade, gradeMin, potential, weightsFor } from './scoring.js';
+import { referenceScore, grade, gradeMin, potential, weightsFor, buildWeights } from './scoring.js';
 import { coreFor, hasCore } from './upgrade.js';
 import { buildSalvageFilter } from './salvage-filter.js';
 
 /** builds.json 中沙、杯、头对应的部位编号。 */
 const MAIN_SLOT = { 2: 'sands', 3: 'goblet', 4: 'circlet' };
+
+/** 最高只有四星的套装；五星套装的四星版本仍作材料。 */
+const FOUR_STAR_SETS = ['教官', '流放者', '学士', '赌徒', '奇迹', '勇士之心', '守护之心', '行者之心', '武人', '冒险家', '幸运儿', '游医'];
+
+/** 各星级满级。 */
+const MAX_LEVEL = { 5: 20, 4: 16 };
 
 /** 每个未毕业部位最多保留的强化候选数。 */
 const UPGRADE_PER_SLOT = 2;
@@ -19,7 +25,8 @@ function mainFits(a, build) {
  * 凑不齐 4 件时按分数逐部位挑选，并标记为未成套。
  */
 function bestLoadout(character, build, pool) {
-  const score = a => referenceScore(a, character) ?? 0;
+  const weights = buildWeights(character, build);
+  const score = a => referenceScore(a, character, weights) ?? 0;
   const fits = pool.filter(a => mainFits(a, build));
   const bestOf = list => list.reduce((x, a) => (!x || score(a) > score(x) ? a : x), null);
   const anyBest = [0, 1, 2, 3, 4].map(slot => bestOf(fits.filter(a => a.slot === slot)));
@@ -56,17 +63,20 @@ export function buildPlan(input, buildsDoc) {
   const characters = (Array.isArray(buildsDoc?.characters) ? buildsDoc.characters : []).filter(c => Array.isArray(c.builds) && c.builds.length).toSorted((a, b) => (b.level || 0) - (a.level || 0));
   // 没有任何有效配装时，所有五星都会落入分解，必须关闭分解清单。
   if (!characters.length) blockers.push('配装数据没有任何角色或玩法，不生成分解清单');
-  const usable = snapshot.artifacts.filter(a => !a.issues.length && a.rarity === 5);
+  // 可分配：全部五星，以及配装点名、且最高只有四星的套装（如教官）；其余作强化材料。
+  const wantedSets = new Set(characters.flatMap(c => c.builds.flatMap(b => b.sets)).filter(s => FOUR_STAR_SETS.includes(s)));
+  const usable = snapshot.artifacts.filter(a => !a.issues.length && (a.rarity === 5 || (a.rarity === 4 && wantedSets.has(a.set))));
   const taken = new Map();
   const loadouts = [];
 
   // 第一轮只分配能凑齐推荐 4 件套的角色；第二轮再让凑不齐的角色从剩余件中逐部位挑选，
   // 避免高等级角色因凑不齐自身套装而拿走其他角色的整套。
   const assign = (c, lo) => {
+    const weights = buildWeights(c, c.builds[lo.build]);
     const slots = lo.pieces.map((a, slot) => {
       if (!a) return { slot, id: null, score: 0, grade: null, graduated: false };
-      const s = referenceScore(a, c) ?? 0;
-      taken.set(a.id, { character: c.name, slot });
+      const s = referenceScore(a, c, weights) ?? 0;
+      taken.set(a.id, { character: c.name, slot, score: s });
       return { slot, id: a.id, score: s, grade: grade(s), graduated: s >= threshold };
     });
     loadouts.push({ name: c.name, level: c.level, build: lo.build, set: lo.set, complete: lo.complete, slots });
@@ -83,18 +93,20 @@ export function buildPlan(input, buildsDoc) {
   }
   loadouts.sort((a, b) => characters.indexOf(characters.find(c => c.name === a.name)) - characters.indexOf(characters.find(c => c.name === b.name)));
 
-  // 未毕业部位：从未分配件中选推荐套装内、主词条符合、带核心副词条、未满级的件作为强化候选。
+  // 未毕业部位：从未分配件中选主词条符合、带核心副词条、未满级的件作为强化候选。
+  // 套装须在推荐内；四件套之外的那个散件部位不限套装。
   const upgrades = new Map();
   for (const lo of loadouts) {
     const c = characters.find(x => x.name === lo.name);
     const build = c.builds[lo.build];
     const core = coreFor(c, lo.build);
     const weights = weightsFor(build, c);
+    const offSlot = lo.complete ? lo.slots.find(x => x.id && usable.find(a => a.id === x.id).set !== lo.set)?.slot : undefined;
     for (const s of lo.slots.filter(x => !x.graduated)) {
       // 未满级件按强化潜力上限排序，不按当前分数，避免 +0 件因当前分低被淘汰。
       const candidates = usable
-        .filter(a => a.slot === s.slot && a.level < 20 && !taken.has(a.id) && !upgrades.has(a.id))
-        .filter(a => build.sets.includes(a.set) && mainFits(a, build) && hasCore(a, core))
+        .filter(a => a.slot === s.slot && a.level < MAX_LEVEL[a.rarity] && !taken.has(a.id) && !upgrades.has(a.id))
+        .filter(a => (s.slot === offSlot || build.sets.includes(a.set)) && mainFits(a, build) && hasCore(a, core))
         .toSorted((x, y) => potential(y, weights).ceiling - potential(x, weights).ceiling)
         .slice(0, UPGRADE_PER_SLOT);
       for (const a of candidates) upgrades.set(a.id, { character: c.name, slot: s.slot, core, current: s.id });
@@ -104,11 +116,10 @@ export function buildPlan(input, buildsDoc) {
   const records = snapshot.artifacts.map(a => {
     const base = { id: a.id, name: a.name, set: a.set, slot: a.slot, level: a.level, rarity: a.rarity, main: a.main, subs: a.subs, location: a.location, locked: a.locked, equippedBy: a.equippedBy };
     if (a.issues.length) return { ...base, category: 'review', reasons: a.issues };
-    if (a.rarity !== 5) return { ...base, category: 'fodder', reasons: ['非五星，作强化材料'] };
+    if (!usable.includes(a)) return { ...base, category: 'fodder', reasons: ['非五星，且不是配装需要的四星套装，作强化材料'] };
     if (taken.has(a.id)) {
       const t = taken.get(a.id);
-      const s = referenceScore(a, { name: t.character }) ?? 0;
-      return { ...base, category: 'keep', character: t.character, score: s, grade: grade(s), reasons: [`${t.character} 的${SLOT_NAMES[t.slot]}`] };
+      return { ...base, category: 'keep', character: t.character, score: t.score, grade: grade(t.score), reasons: [`${t.character} 的${SLOT_NAMES[t.slot]}`] };
     }
     if (upgrades.has(a.id)) {
       const u = upgrades.get(a.id);
