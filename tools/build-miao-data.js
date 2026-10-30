@@ -55,9 +55,23 @@ const usefulAttr = Object.fromEntries(block(await fetchText('resources/meta-gs/a
   }))];
 }));
 
+/**
+ * 从角色 artis.js 中取出 `return def({...})` 的常量权重。
+ * 只接受「键: 数字」形式的对象字面量；引用其他变量或含表达式的写法返回 null，沿用 usefulAttr。
+ */
+function defaultWeights(text) {
+  const m = text?.match(/return\s+def\(\s*\{([^}]*)\}\s*\)/);
+  if (!m) return null;
+  const pairs = m[1].split(',').map(s => s.trim()).filter(Boolean).map(pair => pair.match(/^['"]?(\w+)['"]?\s*:\s*(\d+)$/));
+  if (pairs.some(p => !p)) return null;
+  return Object.fromEntries(pairs.map(p => [p[1], Number(p[2])]));
+}
+
 // 元素取自角色索引，基础属性取自各角色目录；缺失时评分使用 miao-plugin 的默认基础属性。
+// 角色专属默认权重取自各角色 artis.js，覆盖 usefulAttr 中的同名字段。
 const index = Object.values(JSON.parse(await fetchText('resources/meta-gs/character/data.json')));
 const characters = {};
+const artisWeights = {};
 for (const name of Object.keys(usefulAttr)) {
   const data = await fetchText(`resources/meta-gs/character/${name}/data.json`, true);
   const baseAttr = data ? JSON.parse(data).baseAttr : null;
@@ -65,6 +79,8 @@ for (const name of Object.keys(usefulAttr)) {
     elem: index.find(c => c.name === name)?.elem || '',
     baseAttr: baseAttr && ['hp', 'atk', 'def'].every(k => Number.isFinite(baseAttr[k])) ? { hp: baseAttr.hp, atk: baseAttr.atk, def: baseAttr.def } : null,
   };
+  const weights = defaultWeights(await fetchText(`resources/meta-gs/character/${name}/artis.js`, true));
+  if (weights) artisWeights[name] = weights;
 }
 
 // 许可证随数据一起更新，确保与数据来自同一提交。
@@ -72,5 +88,5 @@ for (const name of Object.keys(usefulAttr)) {
 await writeFile(LICENSE, (await fetchText('LICENSE')).replace(/\r\n/g, '\n'));
 const source = { repository: 'yoimiya-kokomi/miao-plugin', commit: COMMIT, license: 'MIT', files };
 const header = `// 由 tools/build-miao-data.js 生成，请勿手动修改。\n// 数据来自 miao-plugin（MIT 许可），版权声明与许可全文见 miao-plugin.LICENSE。\n`;
-await writeFile(OUTPUT, `${header}export default ${JSON.stringify({ source, basicNum, attrPct, usefulAttr, characters }, null, 2)};\n`);
-console.log(`已生成 ${OUTPUT}：${Object.keys(usefulAttr).length} 个角色，${Object.values(characters).filter(c => !c.baseAttr).length} 个缺少基础属性。`);
+await writeFile(OUTPUT, `${header}export default ${JSON.stringify({ source, basicNum, attrPct, usefulAttr, artisWeights, characters }, null, 2)};\n`);
+console.log(`已生成 ${OUTPUT}：${Object.keys(usefulAttr).length} 个角色，${Object.keys(artisWeights).length} 个有专属默认权重，${Object.values(characters).filter(c => !c.baseAttr).length} 个缺少基础属性。`);

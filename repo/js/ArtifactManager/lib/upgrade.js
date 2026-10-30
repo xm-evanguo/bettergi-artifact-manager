@@ -1,8 +1,21 @@
+import { coreSubStats } from './scoring.js';
+
 /** 强化检查点：+4、+8、+12 各一次副词条强化，用于判断是否歪掉。 */
 export const CHECK_LEVELS = [4, 8, 12];
 
 /** 最多容忍的歪掉次数；达到第二次即停止并标记分解。 */
 export const MAX_MISSES = 1;
+
+/**
+ * 某套配装的核心副词条：配装写了 coreSubStats 就用它；
+ * 第一套配装未写时取 miao 权重为 100 的副词条。
+ */
+export function coreFor(character, index = 0) {
+  const build = character.builds[index];
+  const core = build?.coreSubStats || (index === 0 ? coreSubStats(character.name) : null);
+  if (!core?.length) throw new Error(`${character.name} 第 ${index + 1} 套配装缺少核心副词条。`);
+  return core;
+}
 
 /** 圣遗物是否带有任一核心副词条（含待激活词条）。 */
 export function hasCore(artifact, core) {

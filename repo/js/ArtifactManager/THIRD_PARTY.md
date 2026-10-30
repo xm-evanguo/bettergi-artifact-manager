@@ -7,6 +7,9 @@
 - 来源：[miao-plugin](https://github.com/yoimiya-kokomi/miao-plugin)，MIT 许可，固定提交 `929269ce17497bb4f6478f1dd785481744f05ee0`。
 - 生成方式：`bun run data` 运行本项目自写的 `tools/build-miao-data.js`，生成 `repo/js/ArtifactManager/vendor/miao-data.js`。生成器只按文本解析数据，不执行下载的代码，并记录每个源文件的 SHA-256。
 - 使用的数据：`resources/meta-gs/artifact/artis-mark.js` 的角色权重（`usefulAttr`）、`extra.js` 的词条常量、`character/data.json` 的角色元素、各角色 `data.json` 的基础属性。
+- 角色 `artis.js` 中以常量对象写成的 `def({...})` 默认权重（`artisWeights`），优先于 `usefulAttr`；按面板、武器或套装切换的条件规则需要角色面板，背包扫描取不到，未移植。
+- 核心副词条：取权重为 100 的副词条，用于强化时判断是否歪掉。
+- 评分档位：D 至 MAX 每 7 分一档，与 bettergi-scripts-list 中 ArtifactScore（躁动的氨气）浮窗显示的分档一致，便于对照；未复制其代码。
 - 许可证：生成器同时从同一提交下载 `LICENSE`，保存为 `vendor/miao-plugin.LICENSE`，原始版权声明保留。
 - 参考分：`lib/scoring.js` 按 miao-plugin `models/artis/ArtisMark.js` 与 `ArtisMarkCfg.js` 的公式自行实现。未移植角色专属规则和武器加成，所以只作参考，不参与清理判断。
 - 未知角色先检查权重表，不回退到通用双暴权重。

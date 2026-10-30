@@ -1,9 +1,41 @@
 import miao from '../vendor/miao-data.js';
 import { MAX_ROLL } from './model.js';
 
-/** 使用 miao-plugin 的角色权重表，不让未知角色落到通用双暴权重。 */
+/** 使用 miao-plugin 的角色权重表，不让未知角色落到通用双暴权重；角色 artis.js 有固定默认权重时优先使用。 */
 export function characterWeights(name) {
-  return miao.usefulAttr[name] ? { ...miao.usefulAttr[name] } : null;
+  const w = miao.artisWeights?.[name] || miao.usefulAttr[name];
+  return w ? { ...w } : null;
+}
+
+/** 可出现在副词条上的百分比与精通、充能、双暴键，用于判断核心副词条。 */
+const CORE_CANDIDATES = ['hp', 'atk', 'def', 'mastery', 'recharge', 'cpct', 'cdmg'];
+
+/**
+ * 角色的核心副词条：miao 权重为 100 的副词条。
+ * 角色未知或没有满权重词条时返回 null，由调用方使用配装数据里的 coreSubStats。
+ */
+export function coreSubStats(name) {
+  const w = characterWeights(name);
+  if (!w) return null;
+  const core = CORE_CANDIDATES.filter(k => w[k] === 100);
+  return core.length ? core : null;
+}
+
+/** 评分档位，与 BetterGI 圣遗物实时评分脚本（ArtifactScore）的分档一致：每 7 分一档。 */
+const GRADES = [['D', 7], ['C', 14], ['B', 21], ['A', 28], ['S', 35], ['SS', 42], ['SSS', 49], ['ACE', 56]];
+
+/** 把参考分换算为档位。 */
+export function grade(score) {
+  return GRADES.find(([, limit]) => score < limit)?.[0] || 'MAX';
+}
+
+/** 档位对应的最低分，用于设置毕业线。 */
+export function gradeMin(name) {
+  if (name === 'D') return 0;
+  const i = GRADES.findIndex(([g]) => g === name);
+  if (i > 0) return GRADES[i - 1][1];
+  if (name === 'MAX') return GRADES.at(-1)[1];
+  throw new Error(`未知档位：${name}`);
 }
 
 /** 将大小词条分开，固定数值仅作保守排序；不能用该分数单独清理。 */

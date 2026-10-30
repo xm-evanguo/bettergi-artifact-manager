@@ -10,6 +10,7 @@
         "resources/meta-gs/artifact/extra.js",
         "resources/meta-gs/character/data.json",
         "resources/meta-gs/character/*/data.json",
+        "resources/meta-gs/character/*/artis.js",
         "LICENSE"
       ],
       "license": "MIT",

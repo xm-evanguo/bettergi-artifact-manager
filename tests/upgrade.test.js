@@ -1,8 +1,9 @@
 import { describe, test, expect } from 'bun:test';
 import { readFileSync } from 'node:fs';
-import { recordRoll, nextAction, rolledKey } from '../repo/js/ArtifactManager/lib/upgrade.js';
+import { recordRoll, nextAction, rolledKey, coreFor } from '../repo/js/ArtifactManager/lib/upgrade.js';
 import { buildSalvageFilter } from '../repo/js/ArtifactManager/lib/salvage-filter.js';
 import { MAX_ROLL } from '../repo/js/ArtifactManager/lib/model.js';
+import { grade, gradeMin } from '../repo/js/ArtifactManager/lib/scoring.js';
 import { item } from './helpers.js';
 
 const CORE = ['cpct', 'cdmg'];
@@ -94,11 +95,25 @@ describe('分解筛选脚本', () => {
 describe('角色配装数据', () => {
   const data = JSON.parse(readFileSync('repo/js/ArtifactManager/data/builds.json', 'utf8'));
   const keys = new Set(['hp', 'atk', 'def', 'hpPlus', 'atkPlus', 'defPlus', 'mastery', 'recharge', 'cpct', 'cdmg', 'heal', 'phy', 'pyro', 'hydro', 'electro', 'cryo', 'anemo', 'geo', 'dendro']);
-  test('词条键有效，核心副词条取自副词条清单', () => {
-    for (const c of data.characters) for (const b of c.builds) {
+  test('词条键有效，每套配装都能得到核心副词条', () => {
+    for (const c of data.characters) c.builds.forEach((b, i) => {
       for (const k of [...Object.values(b.mainStats).flat(), ...b.subStats]) expect(keys.has(k)).toBe(true);
-      expect(b.coreSubStats.length).toBeGreaterThan(0);
-      for (const k of b.coreSubStats) expect(b.subStats).toContain(k);
-    }
+      for (const k of coreFor(c, i)) expect(keys.has(k)).toBe(true);
+    });
+  });
+  test('辅助角色按 miao 权重取核心副词条', () => {
+    const find = name => data.characters.find(c => c.name === name);
+    expect(coreFor(find('钟离'))).toEqual(['hp']);
+    expect(coreFor(find('琴'))).toEqual(['atk', 'recharge']);
+    expect(coreFor(find('雷电将军'))).toEqual(['cpct', 'cdmg']);
+  });
+  test('毕业档位有效', () => {
+    expect(gradeMin(data.graduateGrade)).toBe(42);
+  });
+});
+
+describe('评分档位', () => {
+  test('与圣遗物实时评分脚本分档一致', () => {
+    expect([6.9, 7, 41.9, 42, 48.9, 49, 56, 70].map(grade)).toEqual(['D', 'C', 'SS', 'SSS', 'SSS', 'ACE', 'MAX', 'MAX']);
   });
 });
