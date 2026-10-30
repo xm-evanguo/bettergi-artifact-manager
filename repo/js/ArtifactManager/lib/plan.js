@@ -10,7 +10,7 @@ const MAIN_SLOT = { 2: 'sands', 3: 'goblet', 4: 'circlet' };
 const FOUR_STAR_SETS = ['教官', '流放者', '学士', '赌徒', '奇迹', '勇士之心', '守护之心', '行者之心', '武人', '冒险家', '幸运儿', '游医'];
 
 /** 实机扫描中核实过的套装名 OCR 错字。 */
-const SET_ALIASES = { 炽城勇者绘卷: '烬城勇者绘卷' };
+const SET_ALIASES = { 炽城勇者绘卷: '烬城勇者绘卷', 炉火融炼之心: '炉火熔炼之心' };
 
 /** 各星级满级。 */
 const MAX_LEVEL = { 5: 20, 4: 16 };

@@ -186,8 +186,10 @@ describe('配装分配与清单', () => {
     doc.characters[0].builds[0].sets = ['绝缘之旗印', '烬城勇者绘卷'];
     const cinder = fullSet('c').map(a => ({ ...a, set: '炽城勇者绘卷' }));
     const near = item('near', { set: '绝缘之旗即', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
-    const plan = buildPlan(snapshot([...cinder, near]), doc);
+    const forge = item('forge', { set: '炉火融炼之心', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...cinder, near, forge]), doc);
     expect(plan.records.find(r => r.id === 'c0').set).toBe('烬城勇者绘卷');
+    expect(plan.records.find(r => r.id === 'forge').set).toBe('炉火熔炼之心');
     expect(plan.records.find(r => r.id === 'near').category).toBe('review');
   });
   test('扫描未确认完整时不生成分解清单', () => {

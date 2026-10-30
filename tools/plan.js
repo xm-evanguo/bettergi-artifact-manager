@@ -11,5 +11,5 @@ const plan = buildPlan(JSON.parse(await readFile(inventory, 'utf8')), JSON.parse
 await mkdir(directory, { recursive: true });
 await writeFile(join(directory, 'plan.json'), JSON.stringify(plan, null, 2));
 await writeFile(join(directory, 'plan.html'), renderPlanReport(plan));
-await writeFile(join(directory, 'salvage-filter.js'), plan.salvage.js);
+await writeFile(join(directory, 'salvage-filter.txt'), plan.salvage.js);
 console.log(JSON.stringify({ counts: plan.counts, blockers: plan.blockers, report: resolve(directory, 'plan.html') }, null, 2));

@@ -36,9 +36,11 @@ export function parsePanel(text, id, location) {
   const slot = slotIndex < 0 ? -1 : SLOT_NAMES.indexOf(lines[slotIndex]);
   const setIndex = lines.findIndex(s => /2件套/.test(s));
   const level = lines.find(s => /^\+\d{1,2}$/.test(s));
-  const mainName = lines[slotIndex + 1];
+  // 部位与主词条名之间偶尔多出单字杂行（实机羽毛出现过「可」）；主词条名至少两个汉字，跳过其他行。
+  const mainIndex = slotIndex < 0 ? -1 : lines.findIndex((s, i) => i > slotIndex && /^[\u4e00-\u9fa5]{2,}$/.test(s));
+  const mainName = lines[mainIndex];
   // 主词条数值前偶尔多出一行「000」之类的杂字（实机 +0 沙漏出现过）；主词条不可能为 0，跳过全零行。
-  const valueIndex = lines.findIndex((s, i) => i > slotIndex + 1 && !/^0+$/.test(s));
+  const valueIndex = mainIndex < 0 ? -1 : lines.findIndex((s, i) => i > mainIndex && !/^0+$/.test(s));
   const mainValue = lines[valueIndex] || '';
   const subs = [];
   for (const line of lines.slice(valueIndex + 1, setIndex < 0 ? undefined : setIndex)) {
