@@ -33,7 +33,16 @@ export async function scanInventory(host, options = {}) {
     if (!text || text !== await host.ocr(PANEL)) throw new Error(`第 ${c.ordinal} 件面板读取不稳定，停止扫描。`);
     return text;
   };
+  const prior = options.resume;
   try {
+    if (prior) {
+      // 续扫：先装入上次记录，此后任何失败保存的检查点都保留原有进度，可以再次续扫。
+      if (!prior.artifacts?.length || prior.artifacts.some(a => !a.rawOcr)) throw new Error('上次扫描结果缺少原始记录，无法续扫。');
+      // 用当前解析规则重新解析原始文本，旧记录也能得到后来的识别修正。
+      snapshot.artifacts.push(...prior.artifacts.map(a => parsePanel(a.rawOcr, a.id, a.location)));
+      snapshot.scan.total = prior.scan?.total ?? null;
+      snapshot.scan.resumedFrom = prior.scan?.id;
+    }
     const size = await host.size();
     if (size.width !== 1920 || size.height !== 1080) throw new Error('扫描仅适配 1920×1080。');
     if (options.autoOpen) {
@@ -48,6 +57,8 @@ export async function scanInventory(host, options = {}) {
     const count = header.match(/(\d[\d,]*)\s*\/\s*(\d[\d,]*)/);
     if (!header.includes('圣遗物') || !count) throw new Error('未确认当前处于圣遗物背包，未执行点击。请取消筛选后重试。');
     const total = Number(count[1].replace(/,/g, ''));
+    // 续扫时先核对数量，再覆盖快照中的总数，失败后保存的检查点仍是上次的数量。
+    if (prior && prior.scan?.total !== total) throw new Error(`背包数量 ${total} 与上次扫描的 ${prior.scan?.total} 不同，库存已变化，请重新完整扫描。`);
     snapshot.scan.total = total;
     snapshot.scan.capacity = Number(count[2].replace(/,/g, ''));
     if (total > snapshot.scan.capacity || snapshot.scan.capacity > 10000) throw new Error('背包数量识别异常。');
@@ -98,20 +109,13 @@ export async function scanInventory(host, options = {}) {
     };
     const unread = viewStart => viewStart + Math.min(PAGE, total - viewStart) > records.length;
     let page = 1;
-    const prior = options.resume;
     if (prior) {
-      // 续扫：沿用上次记录，快速翻到上次停下的位置（每页只核对首行两格），再从该页继续读取。
-      if (prior.scan?.total !== total) throw new Error(`背包数量 ${total} 与上次扫描的 ${prior.scan?.total} 不同，库存已变化，请重新完整扫描。`);
-      if (!prior.artifacts?.length || prior.artifacts.some(a => !a.rawOcr)) throw new Error('上次扫描结果缺少原始记录，无法续扫。');
-      // 用当前解析规则重新解析原始文本，旧记录也能得到后来的识别修正。
-      records.push(...prior.artifacts.map(a => parsePanel(a.rawOcr, a.id, a.location)));
-      snapshot.scan.resumedFrom = prior.scan.id;
-      await save();
+      // 快进：先核对当前视图，已全部记录才翻页；每页核对首行全部 8 格，直到出现未读格子再从该页继续读取。
       while (records.length < total) {
+        const { viewStart, top } = await align(page, Array.from({ length: COLS }, (_, i) => i), 0);
+        if (unread(viewStart)) { await readView(page, viewStart, top); break; }
         page++;
         await scrollPage();
-        const { viewStart, top } = await align(page, [0, COLS - 1], 0);
-        if (unread(viewStart)) { await readView(page, viewStart, top); break; }
       }
     } else {
       for (let p = 0; p < Math.min(PAGE, total); p++) await take(p, p + 1, 1);

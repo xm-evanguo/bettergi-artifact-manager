@@ -108,17 +108,43 @@ describe('背包扫描', () => {
     const r = await scanInventory(second.host, { resume: partial });
     expect(r.scan.complete).toBe(true);
     expect(r.artifacts.map(a => a.rawOcr)).toEqual(second.items);
-    // 快进时每页只点首行两格，总点击远少于从头完整扫描。
+    // 快进时每页只点首行 8 格，总点击远少于从头完整扫描。
     const full = fakeBag({ count: 500, clicksPerRow: 9.6 });
     await scanInventory(full.host);
     expect(second.state.clicks).toBeLessThan(full.state.clicks - partial.artifacts.length / 2);
   });
-  test('续扫时背包数量变化则拒绝', async () => {
+  test('续扫时背包数量变化则拒绝，检查点保留上次进度', async () => {
     const first = fakeBag({ count: 100 });
     const partial = await scanInventory(first.host, { maxPages: 1 });
-    const r = await scanInventory(fakeBag({ count: 101 }).host, { resume: partial });
+    const second = fakeBag({ count: 101 });
+    const r = await scanInventory(second.host, { resume: partial });
     expect(r.scan.complete).toBe(false);
     expect(r.scan.issues.join()).toContain('库存已变化');
+    expect(second.state.saves.at(-1).artifacts).toHaveLength(40);
+    expect(second.state.saves.at(-1).scan.total).toBe(100);
+  });
+  test('续扫时分辨率不符，检查点保留上次进度', async () => {
+    const partial = await scanInventory(fakeBag({ count: 100 }).host, { maxPages: 1 });
+    const second = fakeBag({ count: 100 });
+    second.host.size = async () => ({ width: 1280, height: 720 });
+    await scanInventory(second.host, { resume: partial });
+    expect(second.state.saves.every(s => s.artifacts.length === 40)).toBe(true);
+  });
+  test('续扫：上次停在首屏中途时从首屏继续', async () => {
+    const partial = await scanInventory(fakeBag({ count: 100, failAt: 11 }).host);
+    expect(partial.artifacts).toHaveLength(10);
+    const second = fakeBag({ count: 100 });
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(second.items);
+  });
+  test('续扫：已读区域首行任一格变化则停止，不宣称完整', async () => {
+    const partial = await scanInventory(fakeBag({ count: 100 }).host, { maxPages: 1 });
+    const second = fakeBag({ count: 100 });
+    second.items[3] = panel(999);
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.complete).toBe(false);
+    expect(r.scan.issues.join()).toContain('没有重叠');
   });
   test('面板不稳定时停止，不能继续下一件', async () => {
     const { host, state } = fakeBag({ unstable: true });
