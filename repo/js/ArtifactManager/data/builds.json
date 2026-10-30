@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-10-30",
-  "description": "账号内 50 级及以上角色（不含旅行者）的圣遗物需求。sets 为可选 4 件套（按推荐顺序）；mainStats 为时之沙、空之杯、理之冠可接受的主词条；subStats 为副词条优先级。词条键与 lib/model.js 一致。",
+  "description": "账号内 50 级及以上角色（不含旅行者）的圣遗物需求。sets 为可选 4 件套（按推荐顺序）；mainStats 为时之沙、空之杯、理之冠可接受的主词条；subStats 为副词条优先级。词条键与 lib/model.js 一致。 coreSubStats 为强化判断用的核心副词条：每套配装各一组；含双暴时取暴击率和暴击伤害，否则取 subStats 前两项。可手动修改。",
   "characters": [
     {
       "name": "芙宁娜",
@@ -33,6 +33,10 @@
             "cdmg",
             "hp",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -69,6 +73,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -104,6 +112,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -135,6 +147,10 @@
             ]
           },
           "subStats": [
+            "atk",
+            "recharge"
+          ],
+          "coreSubStats": [
             "atk",
             "recharge"
           ]
@@ -175,6 +191,10 @@
             "cdmg",
             "def",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -211,6 +231,10 @@
             "cdmg",
             "hp",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -235,6 +259,10 @@
             "cdmg",
             "hp",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -269,6 +297,10 @@
             "cpct",
             "cdmg",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -302,6 +334,10 @@
             "cdmg",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -335,6 +371,10 @@
             "mastery",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
           ]
         },
         {
@@ -362,6 +402,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -397,6 +441,10 @@
             "cdmg",
             "mastery",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -421,6 +469,10 @@
             "cdmg",
             "mastery",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -457,6 +509,10 @@
             "atk",
             "recharge",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -492,6 +548,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -525,6 +585,10 @@
             "cpct",
             "cdmg",
             "hp"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -562,6 +626,10 @@
             "cpct",
             "cdmg",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -598,6 +666,10 @@
             "cdmg",
             "mastery",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -635,6 +707,10 @@
             "cdmg",
             "recharge",
             "hp"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -672,6 +748,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -691,6 +771,9 @@
             ]
           },
           "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
             "mastery"
           ]
         }
@@ -727,6 +810,10 @@
             "cdmg",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -746,6 +833,9 @@
             ]
           },
           "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
             "mastery"
           ]
         }
@@ -783,6 +873,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -815,6 +909,10 @@
             "mastery",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
           ]
         }
       ],
@@ -852,6 +950,10 @@
             "mastery",
             "hp",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -887,6 +989,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -926,6 +1032,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -944,6 +1054,9 @@
             ]
           },
           "subStats": [
+            "mastery"
+          ],
+          "coreSubStats": [
             "mastery"
           ]
         }
@@ -984,6 +1097,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1024,6 +1141,10 @@
             "cdmg",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1061,6 +1182,10 @@
             "recharge",
             "cpct",
             "cdmg"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1093,6 +1218,10 @@
           "subStats": [
             "mastery",
             "hp"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "hp"
           ]
         },
         {
@@ -1111,6 +1240,10 @@
             ]
           },
           "subStats": [
+            "hp",
+            "mastery"
+          ],
+          "coreSubStats": [
             "hp",
             "mastery"
           ]
@@ -1147,6 +1280,10 @@
             "recharge",
             "hp",
             "cpct"
+          ],
+          "coreSubStats": [
+            "recharge",
+            "hp"
           ]
         },
         {
@@ -1174,6 +1311,10 @@
             "mastery",
             "recharge",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1211,6 +1352,10 @@
             "recharge",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -1231,6 +1376,10 @@
             ]
           },
           "subStats": [
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
             "mastery",
             "recharge"
           ]
@@ -1269,6 +1418,10 @@
             "recharge",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -1291,6 +1444,10 @@
             "mastery",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
           ]
         }
       ],
@@ -1319,6 +1476,10 @@
             ]
           },
           "subStats": [
+            "hp",
+            "hpPlus"
+          ],
+          "coreSubStats": [
             "hp",
             "hpPlus"
           ]
@@ -1355,6 +1516,10 @@
             "mastery",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
           ]
         }
       ],
@@ -1392,6 +1557,10 @@
             "cdmg",
             "atk",
             "mastery"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -1412,6 +1581,10 @@
             ]
           },
           "subStats": [
+            "mastery",
+            "recharge"
+          ],
+          "coreSubStats": [
             "mastery",
             "recharge"
           ]
@@ -1445,6 +1618,10 @@
           "subStats": [
             "hp",
             "cpct"
+          ],
+          "coreSubStats": [
+            "hp",
+            "cpct"
           ]
         },
         {
@@ -1471,6 +1648,10 @@
             "cdmg",
             "hp",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1507,6 +1688,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1544,6 +1729,10 @@
             "mastery",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -1567,6 +1756,10 @@
             "hp",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "hp",
+            "recharge"
           ]
         }
       ],
@@ -1600,6 +1793,10 @@
             "mastery",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "recharge"
           ]
         }
       ],
@@ -1634,6 +1831,10 @@
             "hp",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "hp",
+            "recharge"
           ]
         },
         {
@@ -1657,6 +1858,10 @@
             "mastery",
             "hp",
             "cpct"
+          ],
+          "coreSubStats": [
+            "mastery",
+            "hp"
           ]
         }
       ],
@@ -1693,6 +1898,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1726,6 +1935,10 @@
             "recharge",
             "atk",
             "cpct"
+          ],
+          "coreSubStats": [
+            "recharge",
+            "atk"
           ]
         },
         {
@@ -1754,6 +1967,10 @@
             "atk",
             "mastery",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1788,6 +2005,10 @@
             "atk",
             "recharge",
             "cpct"
+          ],
+          "coreSubStats": [
+            "atk",
+            "recharge"
           ]
         },
         {
@@ -1811,6 +2032,10 @@
             "cpct",
             "cdmg",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1847,6 +2072,10 @@
             "atk",
             "cpct",
             "cdmg"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1881,6 +2110,10 @@
             "cdmg",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1918,6 +2151,10 @@
             "cpct",
             "cdmg",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         },
         {
@@ -1941,6 +2178,10 @@
             "cdmg",
             "atk",
             "recharge"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
@@ -1977,6 +2218,10 @@
             "def",
             "recharge",
             "atk"
+          ],
+          "coreSubStats": [
+            "cpct",
+            "cdmg"
           ]
         }
       ],
