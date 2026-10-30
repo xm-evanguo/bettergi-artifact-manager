@@ -95,7 +95,7 @@ export function buildPlan(input, buildsDoc) {
 
   // 未毕业部位：从未分配件中选主词条符合、带核心副词条、未满级的件作为强化候选。
   // 套装须在推荐内；四件套之外的那个散件部位不限套装，五件同套时任一部位都可作散件位。
-  // 已选用但未满级、未毕业的件也列入强化。
+  // 已选用但未满级的件也列入强化。
   const upgrades = new Map();
   for (const lo of loadouts) {
     const c = characters.find(x => x.name === lo.name);
@@ -105,9 +105,12 @@ export function buildPlan(input, buildsDoc) {
     const offSlot = lo.complete ? lo.slots.find(x => x.id && usable.find(a => a.id === x.id).set !== lo.set)?.slot : undefined;
     const offOk = slot => lo.complete && (offSlot === undefined || slot === offSlot);
     const fitsCore = a => hasCore(a, coreForPiece(core, a, build));
-    for (const s of lo.slots.filter(x => !x.graduated)) {
+    for (const s of lo.slots) {
+      // 已选用件未满级时继续强化：已毕业的也要升满主词条；未毕业的须带核心副词条，否则强化规则会立即停止。
       const current = s.id && usable.find(a => a.id === s.id);
-      if (current && current.level < MAX_LEVEL[current.rarity]) upgrades.set(current.id, { character: c.name, slot: s.slot, core: coreForPiece(core, current, build), current: s.id });
+      if (current && current.level < MAX_LEVEL[current.rarity] && (s.graduated || fitsCore(current))) upgrades.set(current.id, { character: c.name, slot: s.slot, core: coreForPiece(core, current, build), current: s.id });
+    }
+    for (const s of lo.slots.filter(x => !x.graduated)) {
       // 未满级件按强化潜力上限排序，不按当前分数，避免 +0 件因当前分低被淘汰。
       const candidates = usable
         .filter(a => a.slot === s.slot && a.level < MAX_LEVEL[a.rarity] && !taken.has(a.id) && !upgrades.has(a.id))

@@ -20,15 +20,16 @@ export function coreFor(character, index = 0) {
 /**
  * 某件实际可用的核心副词条：主词条占用的属性不会再出现在副词条上，从核心中去掉；
  * 去掉后为空（如钟离生命沙、精通流精通杯）时改用该玩法其余的副词条。
+ * 仍为空（玩法只要求这一项属性）时返回空数组，表示主词条本身已满足，副词条不设要求。
  */
 export function coreForPiece(core, artifact, build) {
   const rest = core.filter(k => k !== artifact.main.key);
   return rest.length ? rest : (build?.subStats || []).filter(k => k !== artifact.main.key);
 }
 
-/** 圣遗物是否带有任一核心副词条（含待激活词条）。 */
+/** 圣遗物是否带有任一核心副词条（含待激活词条）；核心为空表示不设副词条要求。 */
 export function hasCore(artifact, core) {
-  return artifact.subs.some(s => core.includes(s.key));
+  return !core.length || artifact.subs.some(s => core.includes(s.key));
 }
 
 /** 强化前后是否仍是同一件：名称、套装、部位、主词条一致，原有副词条全部保留且数值不降，最多新增一条。 */
@@ -74,7 +75,7 @@ export function recordRoll(state, after, newLevel) {
   const key = rolledKey(state.artifact, after);
   if (key === null) throw new Error('强化后不是同一件，或无法确定本次强化落在哪个副词条，停止强化。');
   const counted = CHECK_LEVELS.includes(crossed[0]);
-  const miss = counted && !state.core.includes(key);
+  const miss = counted && state.core.length > 0 && !state.core.includes(key);
   const next = { ...state, level: newLevel, artifact: after, misses: state.misses + (miss ? 1 : 0), rolls: [...(state.rolls || []), { level: crossed[0], key, miss }] };
   return { ...next, action: nextAction(next) };
 }

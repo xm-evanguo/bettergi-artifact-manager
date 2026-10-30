@@ -1,5 +1,5 @@
 {
-  "time": "20261030084451",
+  "time": "20261030085206",
   "url": "https://github.com/xm-evanguo/bettergi-artifact-manager/archive/refs/heads/release.zip",
   "file": "repo.json",
   "indexes": [
@@ -21,8 +21,8 @@
           "tags": [
             "bgi≥0.66.0"
           ],
-          "lastUpdated": "2026-10-30 08:44:51",
-          "contentHash": "ab5f87cc532e342ac67058e58ad0f73de14447f569579ce403c2b2b3dd795aa4"
+          "lastUpdated": "2026-10-30 08:52:06",
+          "contentHash": "13470cf537c6afbe63a306a59909ba2085e8c9005989e3992dfdca5d43e76680"
         }
       ]
     }

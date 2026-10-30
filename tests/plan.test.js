@@ -128,6 +128,25 @@ describe('配装分配与清单', () => {
     const plan = buildPlan(snapshot([...fullSet('a', 1), cand]), builds());
     expect(plan.records.find(r => r.id === 'cand').category).toBe('upgrade');
   });
+  test('已毕业但未满级的已选用件仍列入强化', () => {
+    const set = fullSet('a');
+    set[0] = { ...set[0], level: 16 };
+    const plan = buildPlan(snapshot(set), builds());
+    expect(plan.loadouts[0].slots[0].graduated).toBe(true);
+    expect(plan.records.find(r => r.id === 'a0').category).toBe('upgrade');
+  });
+  test('无核心副词条的已选用件保留但不建议强化', () => {
+    const set = fullSet('a', 1);
+    set[0] = { ...set[0], level: 8, subs: [sub('atk', 2), sub('def', 2), sub('hp', 1), sub('mastery', 1)] };
+    expect(buildPlan(snapshot(set), builds()).records.find(r => r.id === 'a0').category).toBe('keep');
+  });
+  test('只要求精通的玩法，精通主词条的候选进入强化', () => {
+    const doc = builds();
+    doc.characters[0].builds = [{ sets: ['乐园遗落之花'], mainStats: { sands: ['mastery'], goblet: ['mastery'], circlet: ['mastery'] }, subStats: ['mastery'], coreSubStats: ['mastery'] }];
+    const goblet = id => item(id, { slot: 3, set: '乐园遗落之花', level: 0, main: { key: 'mastery', value: 28 }, subs: [sub('atk', 1), sub('def', 1), sub('hp', 1)] });
+    const plan = buildPlan(snapshot([goblet('g1'), goblet('g2')]), doc);
+    expect(plan.records.filter(r => r.category === 'upgrade').map(r => r.id).sort()).toEqual(['g1', 'g2']);
+  });
   test('存在 blocker 时四星不作材料，改为待复查', () => {
     const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })], { complete: false }), builds());
     expect(plan.records.find(r => r.id === 'four').category).toBe('review');

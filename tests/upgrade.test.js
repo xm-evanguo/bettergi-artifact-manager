@@ -157,6 +157,7 @@ describe('四星与主词条占用核心', () => {
   test('主词条占用唯一核心属性时改用玩法其余副词条', () => {
     const sands = item('s', { slot: 2, main: { key: 'hp', value: 46.6 } });
     expect(coreForPiece(['hp'], sands, { subStats: ['hp', 'cpct', 'recharge'] })).toEqual(['cpct', 'recharge']);
+    expect(coreForPiece(['mastery'], item('m', { slot: 3, main: { key: 'mastery', value: 187 } }), { subStats: ['mastery'] })).toEqual([]);
     expect(coreForPiece(['cpct', 'cdmg'], item('c', { slot: 4, main: { key: 'cpct', value: 31.1 } }), {})).toEqual(['cdmg']);
   });
   test('无法生成指纹的待复查件使同名同等级的分解件跳过，不中止', () => {
