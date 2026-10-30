@@ -32,14 +32,14 @@ function run(keys, start = fresh()) {
 }
 
 describe('强化规则', () => {
-  test('没有任何双暴词条直接分解，不强化', () => {
+  test('没有任何双暴词条不强化，交回分析', () => {
     const a = fresh([['atk', 5.8], ['def', 7.3], ['hpPlus', 299], ['mastery', 23]]);
-    expect(nextAction({ level: 0, misses: 0, artifact: a, core: CORE })).toBe('discard');
+    expect(nextAction({ level: 0, misses: 0, artifact: a, core: CORE })).toBe('stop');
   });
-  test('+8 时已歪两次立即分解', () => {
+  test('+8 时已歪两次立即停止', () => {
     const steps = run(['atk', 'def']);
     expect(steps.length).toBe(2);
-    expect(steps.at(-1).action).toBe('discard');
+    expect(steps.at(-1).action).toBe('stop');
     expect(steps.at(-1).misses).toBe(2);
   });
   test('+12 只歪一次则继续强化到 +20', () => {
@@ -58,6 +58,26 @@ describe('强化规则', () => {
     const start = fresh([['cpct', 3.9], ['atk', 5.8], ['def', 7.3]]);
     const after = { ...start, level: 4, subs: [...start.subs, { key: 'cdmg', value: 7.8, active: true }] };
     expect(rolledKey(start, after)).toBe('cdmg');
+  });
+  test('一次跨过 +8 按 +8 检查点计数', () => {
+    let state = { level: 4, misses: 1, artifact: { ...fresh(), level: 4 }, core: CORE };
+    state = recordRoll(state, { ...roll(state.artifact, 'atk'), level: 9 }, 9);
+    expect(state.rolls[0].level).toBe(8);
+    expect(state.action).toBe('stop');
+  });
+  test('一次跨过两个强化点时停止', () => {
+    const a = fresh();
+    expect(() => recordRoll({ level: 0, misses: 0, artifact: a, core: CORE }, roll(roll(a, 'cpct'), 'cpct'), 8)).toThrow();
+  });
+  test('强化后漏掉原有词条视为不是同一件', () => {
+    const a = fresh();
+    const after = roll(a, 'cpct');
+    after.subs = after.subs.filter(s => s.key !== 'def');
+    expect(rolledKey(a, after)).toBe(null);
+  });
+  test('强化后主词条不同视为不是同一件', () => {
+    const a = fresh();
+    expect(rolledKey(a, { ...roll(a, 'cpct'), main: { key: 'atkPlus', value: 311 } })).toBe(null);
   });
   test('无法判断落点时停止', () => {
     const a = fresh();
@@ -79,7 +99,7 @@ function evaluate(js, stat) {
 describe('分解筛选脚本', () => {
   const map = { hpPlus: 'HP', cpct: 'CRITRate', cdmg: 'CRITDMG', atk: 'ATKPercent', recharge: 'EnergyRecharge', def: 'DEFPercent' };
   const target = item('t');
-  const js = buildSalvageFilter([target]);
+  const { js } = buildSalvageFilter([target], [target, item('keep', { level: 16 })]);
   test('完全一致的圣遗物输出 true', () => {
     expect(evaluate(js, hostStat(target, map))).toBe(true);
   });
@@ -89,6 +109,17 @@ describe('分解筛选脚本', () => {
   });
   test('等级不同输出 false', () => {
     expect(evaluate(js, hostStat({ ...target, level: 16 }, map))).toBe(false);
+  });
+  test('库存中有同属性件需要保留时整组不分解', () => {
+    const r = buildSalvageFilter([target], [target, item('twin')]);
+    expect(r.skipped).toEqual([target]);
+    expect(evaluate(r.js, hostStat(target, map))).toBe(false);
+  });
+  test('同属性件全部在分解清单时可以分解', () => {
+    const twin = item('twin');
+    const r = buildSalvageFilter([target, twin], [target, twin]);
+    expect(r.skipped).toEqual([]);
+    expect(evaluate(r.js, hostStat(target, map))).toBe(true);
   });
 });
 
