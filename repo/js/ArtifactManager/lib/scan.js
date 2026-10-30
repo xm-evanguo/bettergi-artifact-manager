@@ -12,6 +12,16 @@ const SCROLL_CLICKS = 39;
 /** 对不上时最多回滚的滚轮格数（约 1.5 行）。 */
 const MAX_NUDGE = 15;
 
+/**
+ * 用于比对同一件圣遗物的指纹：只取套装名之前的行（名称、部位、主词条、等级、副词条）。
+ * 之后的套装效果长文本 OCR 杂字较多，两次运行间可能不同；行首符号和全零杂行也去掉。
+ */
+export function fingerprint(text) {
+  const lines = String(text || '').split('\n').map(l => l.trim().replace(/^[^\u4e00-\u9fa5\d+]+/, '')).filter(l => l && !/^0+$/.test(l));
+  const setLine = lines.findIndex(l => /[:：]$/.test(l));
+  return (setLine > 0 ? lines.slice(0, setLine) : lines).join('\n');
+}
+
 /** 视图内第 p 个格子（行优先）。 */
 const at = p => ({ ...cell(Math.floor(p / COLS), p % COLS), row: Math.floor(p / COLS), col: p % COLS });
 
@@ -66,6 +76,9 @@ export async function scanInventory(host, options = {}) {
     const maxPages = options.maxPages ?? Infinity;
     if (maxPages !== Infinity && (!Number.isInteger(maxPages) || maxPages < 1)) throw new Error('扫描页数须为正整数。');
     const records = snapshot.artifacts;
+    const prints = new WeakMap();
+    /** 记录的指纹，算过一次后缓存。 */
+    const fp = r => { if (!prints.has(r)) prints.set(r, fingerprint(r.rawOcr)); return prints.get(r); };
     /** 读取视图中第 p 格，作为第 ordinal 件记录。 */
     const take = async (p, ordinal, page) => {
       const c = at(p);
@@ -82,9 +95,9 @@ export async function scanInventory(host, options = {}) {
         if (nudge) { await host.scroll(1); await host.sleep(300); }
         const top = new Map();
         for (const col of cols) top.set(col, await read({ ordinal: `第 ${page} 页首行`, ...at(col) }));
-        const starts = [];
+        const starts = [], want = [...top].map(([col, t]) => [col, fingerprint(t)]);
         for (let i = from; i < records.length; i += COLS) {
-          if ([...top].every(([col, t]) => i + col >= records.length || records[i + col].rawOcr === t)) starts.push(i);
+          if (want.every(([col, f]) => i + col >= records.length || fp(records[i + col]) === f)) starts.push(i);
         }
         if (starts.length > 1) throw new Error(`第 ${page} 页首行与多处已读记录相同，无法确定位置，停止扫描。`);
         if (starts.length === 1) return { viewStart: starts[0], top };

@@ -1,5 +1,5 @@
 import { test, expect, describe } from 'bun:test';
-import { scanInventory } from '../repo/js/ArtifactManager/lib/scan.js';
+import { scanInventory, fingerprint } from '../repo/js/ArtifactManager/lib/scan.js';
 import { parsePanel, rarityFromMain } from '../repo/js/ArtifactManager/lib/ocr.js';
 
 /** 第 n 件的虚构面板；数值不同以便区分每一件。 */
@@ -130,6 +130,16 @@ describe('背包扫描', () => {
     await scanInventory(second.host, { resume: partial });
     expect(second.state.saves.every(s => s.artifacts.length === 40)).toBe(true);
   });
+  test('续扫：两次运行间套装效果文字识别不同，仍能快进对齐', async () => {
+    const partial = await scanInventory(fakeBag({ count: 300, clicksPerRow: 9.6 }).host, { maxPages: 3 });
+    const second = fakeBag({ count: 300, clicksPerRow: 9.6 });
+    second.items.forEach((t, i) => { second.items[i] = t.replace('2件套:', '02件套:').replace('提高20%', '提髙20%'); });
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.issues).toEqual([]);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => fingerprint(a.rawOcr))).toEqual(second.items.map(fingerprint));
+    expect(second.state.clicks).toBeLessThan(300);
+  });
   test('续扫：上次停在首屏中途时从首屏继续', async () => {
     const partial = await scanInventory(fakeBag({ count: 100, failAt: 11 }).host);
     expect(partial.artifacts).toHaveLength(10);
@@ -160,6 +170,15 @@ describe('背包扫描', () => {
     const { host } = fakeBag({ count: 50 });
     const r = await scanInventory(host, { maxPages: 1 });
     expect(r.artifacts).toHaveLength(40); expect(r.scan.complete).toBe(false); expect(r.scan.issues.join()).toContain('40/50');
+  });
+});
+
+describe('指纹', () => {
+  test('忽略套装效果文字、行首符号与全零杂行，副词条不同则不同', () => {
+    const a = panel(0);
+    expect(fingerprint(a.replace('提高20%', '提髙2O%'))).toBe(fingerprint(a));
+    expect(fingerprint(a.replace('·', '?').replace('生命值\n4,780', '生命值\n000\n4,780'))).toBe(fingerprint(a));
+    expect(fingerprint(panel(1))).not.toBe(fingerprint(a));
   });
 });
 
