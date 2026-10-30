@@ -9,6 +9,9 @@ const HEADER = { x: 0, y: 0, width: 1920, height: 100 };
 /** 每次翻页的滚轮格数：约前进 4 行，让新视图首行与上一视图末行重叠，用于核对连续性。 */
 const SCROLL_CLICKS = 39;
 
+/** 对不上时最多回滚的滚轮格数（约 1.5 行）。 */
+const MAX_NUDGE = 15;
+
 /** 视图内第 p 个格子（行优先）。 */
 const at = p => ({ ...cell(Math.floor(p / COLS), p % COLS), row: Math.floor(p / COLS), col: p % COLS });
 
@@ -59,30 +62,66 @@ export async function scanInventory(host, options = {}) {
       records.push(parsePanel(text, `${snapshot.scan.id}-${ordinal}`, { page, row: c.row + 1, column: c.col + 1, ordinal }));
       await save();
     };
-    for (let p = 0; p < Math.min(PAGE, total); p++) await take(p, p + 1, 1);
-    for (let page = 2; records.length < total && page <= maxPages; page++) {
+    /**
+     * 用重叠部分定位：读视图首行的若干格，必须与已读记录中恰好一行吻合，才能证明中间没有漏件。
+     * 每页滚动的格数与 4 行略有出入，误差会逐页累积；对不上时先回滚一格再试，最多回滚约 1.5 行。
+     */
+    const align = async (page, cols, from) => {
+      for (let nudge = 0; nudge <= MAX_NUDGE; nudge++) {
+        if (nudge) { await host.scroll(1); await host.sleep(300); }
+        const top = new Map();
+        for (const col of cols) top.set(col, await read({ ordinal: `第 ${page} 页首行`, ...at(col) }));
+        const starts = [];
+        for (let i = from; i < records.length; i += COLS) {
+          if ([...top].every(([col, t]) => i + col >= records.length || records[i + col].rawOcr === t)) starts.push(i);
+        }
+        if (starts.length > 1) throw new Error(`第 ${page} 页首行与多处已读记录相同，无法确定位置，停止扫描。`);
+        if (starts.length === 1) return { viewStart: starts[0], top };
+      }
+      throw new Error(`第 ${page} 页与上一页没有重叠，回滚 ${MAX_NUDGE} 格后仍对不上，可能滚动过多漏件，停止扫描。`);
+    };
+    const scrollPage = async () => {
       await host.move(cell(0, 0).x, cell(0, 0).y);
       for (let n = 0; n < SCROLL_CLICKS; n++) { await host.scroll(-1); await host.sleep(40); }
       await host.sleep(500);
-      // 用重叠部分定位：新视图首行必须整行等于已读的某一行，才能证明中间没有漏件。
-      const top = [];
-      for (let col = 0; col < COLS; col++) top.push(await read({ ordinal: `第 ${page} 页首行`, ...at(col) }));
-      const starts = [];
-      for (let i = Math.max(0, Math.floor((records.length - PAGE) / COLS) * COLS); i < records.length; i += COLS) {
-        if (top.every((t, col) => i + col >= records.length || records[i + col].rawOcr === t)) starts.push(i);
-      }
-      if (starts.length !== 1) throw new Error(starts.length ? `第 ${page} 页首行与多处已读记录相同，无法确定位置，停止扫描。` : `第 ${page} 页与上一页没有重叠，可能滚动过多漏件，停止扫描。`);
-      const viewStart = starts[0];
+    };
+    /** 读出当前视图中尚未记录的格子；首行已读出的直接复用。 */
+    const readView = async (page, viewStart, top) => {
       const end = Math.min(PAGE, total - viewStart);
-      if (viewStart + end <= records.length) throw new Error(`第 ${page} 页没有新物品，滚动未前进，停止扫描。`);
-      // 首行中已读出、但尚未记录的新件直接复用读取结果，其余格子逐件读取。
       for (let p = records.length - viewStart; p < end; p++) {
-        if (p < COLS) {
+        if (top.has(p)) {
           const c = at(p), ordinal = viewStart + p + 1;
-          records.push(parsePanel(top[p], `${snapshot.scan.id}-${ordinal}`, { page, row: c.row + 1, column: c.col + 1, ordinal }));
+          records.push(parsePanel(top.get(p), `${snapshot.scan.id}-${ordinal}`, { page, row: c.row + 1, column: c.col + 1, ordinal }));
           await save();
         } else await take(p, viewStart + p + 1, page);
       }
+    };
+    const unread = viewStart => viewStart + Math.min(PAGE, total - viewStart) > records.length;
+    let page = 1;
+    const prior = options.resume;
+    if (prior) {
+      // 续扫：沿用上次记录，快速翻到上次停下的位置（每页只核对首行两格），再从该页继续读取。
+      if (prior.scan?.total !== total) throw new Error(`背包数量 ${total} 与上次扫描的 ${prior.scan?.total} 不同，库存已变化，请重新完整扫描。`);
+      if (!prior.artifacts?.length || prior.artifacts.some(a => !a.rawOcr)) throw new Error('上次扫描结果缺少原始记录，无法续扫。');
+      // 用当前解析规则重新解析原始文本，旧记录也能得到后来的识别修正。
+      records.push(...prior.artifacts.map(a => parsePanel(a.rawOcr, a.id, a.location)));
+      snapshot.scan.resumedFrom = prior.scan.id;
+      await save();
+      while (records.length < total) {
+        page++;
+        await scrollPage();
+        const { viewStart, top } = await align(page, [0, COLS - 1], 0);
+        if (unread(viewStart)) { await readView(page, viewStart, top); break; }
+      }
+    } else {
+      for (let p = 0; p < Math.min(PAGE, total); p++) await take(p, p + 1, 1);
+    }
+    for (let pass = 1; records.length < total && pass < maxPages; pass++) {
+      page++;
+      await scrollPage();
+      const { viewStart, top } = await align(page, Array.from({ length: COLS }, (_, i) => i), Math.max(0, Math.floor((records.length - PAGE) / COLS) * COLS));
+      if (!unread(viewStart)) throw new Error(`第 ${page} 页没有新物品，滚动未前进，停止扫描。`);
+      await readView(page, viewStart, top);
     }
     if (snapshot.artifacts.length < total) snapshot.scan.issues.push(`仅采集 ${snapshot.artifacts.length}/${total} 件，页数受限。`);
     else snapshot.scan.complete = true;

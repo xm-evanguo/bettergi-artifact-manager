@@ -6,13 +6,14 @@ import { parsePanel, rarityFromMain } from '../repo/js/ArtifactManager/lib/ocr.j
 const panel = (n, extra = '') => `虚构之花\n生之花\n生命值\n4,780\n+20\n暴击率+${(3.1 + n / 10).toFixed(1)}%\n暴击伤害+7.8%\n攻击力+5.8%\n元素充能效率+6.5%\n绝缘之旗印:\n2件套:元素充能效率提高20%${extra}`;
 
 /**
- * 模拟背包：8 列网格，每页 5 行；每滚 39 格前进 scrollRows 行，滚到底时与底部对齐。
+ * 模拟背包：8 列网格，每页 5 行。滚动位置按滚轮格数记录，每 clicksPerRow 格前进一行（默认 39 格正好 4 行），
+ * 可以是小数以模拟误差累积；点击格子中心命中当时显示在该位置的那一行。滚到底时与底部对齐。
  * 只记录点击、滚动与检查点，不发送任何系统输入。
  */
-function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrollRows = 4 } = {}) {
+function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrollRows = 4, clicksPerRow = 39 / scrollRows } = {}) {
   const items = Array.from({ length: count }, (_, i) => panel(i));
-  const totalRows = Math.ceil(count / 8);
-  const state = { clicks: 0, scrolls: 0, saves: [], offset: 0, ticks: 0, selected: null, reads: 0, opened: false };
+  const maxPos = Math.max(0, Math.ceil(count / 8) - 5) * clicksPerRow;
+  const state = { clicks: 0, scrolls: 0, ups: 0, saves: [], pos: 0, selected: null, reads: 0, opened: false };
   const host = {
     size: async () => ({ width: 1920, height: 1080 }),
     returnMainUi: async () => {}, keyPress: async () => { state.opened = true; },
@@ -24,14 +25,16 @@ function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrol
     click: async (x, y) => {
       state.clicks++;
       if (state.clicks === failAt) throw new Error('用户中断');
-      const col = Math.round((x - 180) / 145), row = Math.round((y - 253) / 166);
       if (x === 675 && y === 50) return;
-      state.selected = (state.offset + row) * 8 + col;
+      const col = Math.round((x - 180) / 145), row = Math.round((y - 253) / 166);
+      const top = Number.isFinite(clicksPerRow) ? state.pos / clicksPerRow : 0;
+      state.selected = Math.floor(top + row + 0.5) * 8 + col;
     },
     move: async () => {},
     scroll: async n => {
       state.scrolls++;
-      if (n < 0 && ++state.ticks === 39) { state.ticks = 0; state.offset = Math.min(state.offset + scrollRows, Math.max(0, totalRows - 5)); }
+      if (n > 0) state.ups++;
+      state.pos = Math.min(maxPos, Math.max(0, state.pos - n));
     },
     sleep: async () => {},
     checkpoint: async s => { state.saves.push(structuredClone(s)); },
@@ -64,8 +67,22 @@ describe('背包扫描', () => {
     expect(r.scan.complete).toBe(true);
     expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
   });
-  test('滚动过多（超过 4 行）时没有重叠，停止且不宣称完整', async () => {
-    const { host } = fakeBag({ count: 120, scrollRows: 6 });
+  test('每页多滚约 0.06 行的累积误差靠回滚自动纠正', async () => {
+    const { host, items, state } = fakeBag({ count: 900, clicksPerRow: 9.6 });
+    const r = await scanInventory(host);
+    expect(r.scan.issues).toEqual([]);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+    expect(state.ups).toBeGreaterThan(0);
+  });
+  test('每页多滚一整行时回滚后续读', async () => {
+    const { host, items } = fakeBag({ count: 300, scrollRows: 5 });
+    const r = await scanInventory(host);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+  });
+  test('滚动过多、回滚后仍无重叠时停止，不宣称完整', async () => {
+    const { host } = fakeBag({ count: 120, scrollRows: 8 });
     const r = await scanInventory(host);
     expect(r.scan.complete).toBe(false);
     expect(r.artifacts).toHaveLength(40);
@@ -82,6 +99,26 @@ describe('背包扫描', () => {
     const r = await scanInventory(host);
     expect(r.scan.complete).toBe(false);
     expect(r.scan.issues.join()).toContain('未前进');
+  });
+  test('续扫：快速翻到上次停下的位置，读完剩余件', async () => {
+    const first = fakeBag({ count: 500, clicksPerRow: 9.6 });
+    const partial = await scanInventory(first.host, { maxPages: 6 });
+    expect(partial.artifacts.length).toBeLessThan(500);
+    const second = fakeBag({ count: 500, clicksPerRow: 9.6 });
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(second.items);
+    // 快进时每页只点首行两格，总点击远少于从头完整扫描。
+    const full = fakeBag({ count: 500, clicksPerRow: 9.6 });
+    await scanInventory(full.host);
+    expect(second.state.clicks).toBeLessThan(full.state.clicks - partial.artifacts.length / 2);
+  });
+  test('续扫时背包数量变化则拒绝', async () => {
+    const first = fakeBag({ count: 100 });
+    const partial = await scanInventory(first.host, { maxPages: 1 });
+    const r = await scanInventory(fakeBag({ count: 101 }).host, { resume: partial });
+    expect(r.scan.complete).toBe(false);
+    expect(r.scan.issues.join()).toContain('库存已变化');
   });
   test('面板不稳定时停止，不能继续下一件', async () => {
     const { host, state } = fakeBag({ unstable: true });
@@ -104,6 +141,11 @@ describe('面板解析', () => {
   test('读出套装、主词条、副词条和五星', () => {
     const a = parsePanel(panel(0), 'a', { ordinal: 1 });
     expect(a.set).toBe('绝缘之旗印'); expect(a.main).toEqual({ key: 'hpPlus', value: 4780 }); expect(a.subs).toHaveLength(4); expect(a.rarity).toBe(5); expect(a.locked).toBeNull();
+  });
+  test('主词条数值前多出全零杂行时跳过', () => {
+    const a = parsePanel(panel(0).replace('生命值\n4,780', '生命值\n000\n4,780'), 'a');
+    expect(a.main).toEqual({ key: 'hpPlus', value: 4780 });
+    expect(a.subs).toHaveLength(4);
   });
   test('行首圆点被读成其他符号时仍读出副词条', () => {
     const text = panel(0).replace('·', '').replace('暴击伤害+7.8%', '?暴击伤害+7.8%').replace('攻击力+5.8%', '。攻击力+5.8%');
