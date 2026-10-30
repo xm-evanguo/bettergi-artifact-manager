@@ -63,6 +63,13 @@ export function buildPlan(input, buildsDoc) {
   const characters = (Array.isArray(buildsDoc?.characters) ? buildsDoc.characters : []).filter(c => Array.isArray(c.builds) && c.builds.length).toSorted((a, b) => (b.level || 0) - (a.level || 0));
   // 没有任何有效配装时，所有五星都会落入分解，必须关闭分解清单。
   if (!characters.length) blockers.push('配装数据没有任何角色或玩法，不生成分解清单');
+  // OCR 偶尔读错套装名中的一个字（如「烬城」读成「炽城」）：与配装中的套装名等长且只差一个字时纠正。
+  const knownSets = [...new Set(characters.flatMap(c => c.builds.flatMap(b => b.sets)))];
+  for (const a of snapshot.artifacts) {
+    if (!a.set || knownSets.includes(a.set)) continue;
+    const near = knownSets.filter(k => k.length === a.set.length && [...k].filter((ch, i) => ch !== a.set[i]).length === 1);
+    if (near.length === 1) a.set = near[0];
+  }
   // 可分配：全部五星，以及配装点名、且最高只有四星的套装（如教官）；其余作强化材料。
   const wantedSets = new Set(characters.flatMap(c => c.builds.flatMap(b => b.sets)).filter(s => FOUR_STAR_SETS.includes(s)));
   const usable = snapshot.artifacts.filter(a => !a.issues.length && (a.rarity === 5 || (a.rarity === 4 && wantedSets.has(a.set))));

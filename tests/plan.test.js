@@ -181,6 +181,12 @@ describe('配装分配与清单', () => {
     expect(plan.records.find(r => r.id === 'bad').category).toBe('review');
     expect(plan.records.find(r => r.id === 'weak').category).toBe('discard');
   });
+  test('套装名读错一个字时按配装中的套装名纠正', () => {
+    const set = fullSet('a').map(a => ({ ...a, set: '绝缘之旗即' }));
+    const plan = buildPlan(snapshot(set), builds());
+    expect(plan.loadouts[0].set).toBe('绝缘之旗印');
+    expect(plan.records[0].set).toBe('绝缘之旗印');
+  });
   test('扫描未确认完整时不生成分解清单', () => {
     const extra = item('x', { subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
     const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());

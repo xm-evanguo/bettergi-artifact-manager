@@ -42,7 +42,8 @@ export function parsePanel(text, id, location) {
   for (const line of lines.slice(slotIndex + 3, setIndex < 0 ? undefined : setIndex)) {
     const m = line.match(/^([^+]+)\+([\d,.]+%?)(.*)$/);
     if (!m) continue;
-    const key = statKey(m[1].trim().replace(/[·•]/g, ''), m[2]);
+    // 行首圆点常被 OCR 读成 ?、。、0 等符号，去掉词条名前所有非中文字符。
+    const key = statKey(m[1].trim().replace(/^[^\u4e00-\u9fa5]+/, ''), m[2]);
     if (key in MAX_ROLL) subs.push({ key, value: Number(m[2].replace(/[,%]/g, '')), active: !line.includes('待激活') });
   }
   // 面板最后一行「角色名已装备」表示穿戴者；有套装行但没有该行时视为未穿戴。
