@@ -91,9 +91,21 @@ export async function scanInventory(host, options = {}) {
     const take = async (p, ordinal, page) => {
       const c = at(p), before = lastRead;
       let text = await read({ ordinal, ...c });
-      // 面板没变：可能点到了空格，也可能点击没生效，等一下再点一次确认。
-      if (text === before) { await host.sleep(500); text = await read({ ordinal, ...c }); }
-      if (text === before || isMaterial(text)) { gridEnd = true; return; }
+      if (text === before) {
+        // 面板没变：可能点到空格，也可能是属性完全相同的另一件。先点本视图中面板不同的已读格子，再点回来：
+        // 空格不会改变面板，仍显示那一格；相同的另一件会再次显示原文本。
+        const q = [...Array(p).keys()].reverse().find(q => records[ordinal - 1 - p + q]?.rawOcr !== before);
+        if (q === undefined) {
+          await host.sleep(500);
+          text = await read({ ordinal, ...c });
+          if (text === before) { gridEnd = true; return; }
+        } else {
+          const ref = await read({ ordinal, ...at(q) });
+          text = await read({ ordinal, ...c });
+          if (text === ref) { gridEnd = true; return; }
+        }
+      }
+      if (isMaterial(text)) { gridEnd = true; return; }
       records.push(parsePanel(text, `${snapshot.scan.id}-${ordinal}`, { page, row: c.row + 1, column: c.col + 1, ordinal }));
       await save();
     };

@@ -166,6 +166,13 @@ describe('背包扫描', () => {
     expect(r.scan.complete).toBe(true);
     expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
   });
+  test('相邻两件属性完全相同时不误判为空格', async () => {
+    const { host, items } = fakeBag({ count: 93, materials: 2 });
+    items[50] = items[49]; items[51] = items[49]; items[2] = items[1];
+    const r = await scanInventory(host);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+  });
   test('开着筛选时读到末尾即停止，提示取消筛选，不宣称完整', async () => {
     for (const materials of [0, 2]) {
       const { host, items } = fakeBag({ count: 120, shown: 93, materials, header: '圣遗物 120/2100' });
