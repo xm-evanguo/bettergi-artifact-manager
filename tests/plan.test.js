@@ -58,6 +58,33 @@ describe('配装分配与清单', () => {
     expect(plan.loadouts.find(l => l.name === '雷电将军').complete).toBe(true);
     expect(plan.loadouts[0].name).toBe('芙宁娜');
   });
+  test('没有任何配装时关闭分解清单', () => {
+    const plan = buildPlan(snapshot(fullSet('a')), { graduateGrade: 'SSS', characters: [] });
+    expect(plan.counts.discard).toBe(0);
+    expect(plan.blockers.join()).toContain('配装数据');
+  });
+  test('多套玩法时选总分更高的一套', () => {
+    const doc = builds();
+    doc.characters[0].builds.unshift({ sets: ['黄金剧团'], mainStats: { sands: ['atk'], goblet: ['electro'], circlet: ['cpct', 'cdmg'] }, subStats: ['cpct', 'cdmg'] });
+    const plan = buildPlan(snapshot(fullSet('a')), doc);
+    expect(plan.loadouts[0].build).toBe(1);
+    expect(plan.loadouts[0].set).toBe('绝缘之旗印');
+  });
+  test('强化候选按潜力而非当前分数排序', () => {
+    const set = fullSet('a', 1);
+    const fresh3 = n => item(n, { level: 0, subs: [sub('cpct', 1), sub('cdmg', 1), sub('def', 1)] });
+    const leveled = item('lv8', { level: 8, subs: [sub('cpct', 1), sub('atk', 2), sub('def', 2), sub('hp', 1)] });
+    const plan = buildPlan(snapshot([...set, fresh3('f1'), fresh3('f2'), leveled]), builds());
+    expect(plan.records.find(r => r.id === 'f1').category).toBe('upgrade');
+    expect(plan.records.find(r => r.id === 'f2').category).toBe('upgrade');
+    expect(plan.records.find(r => r.id === 'lv8').category).toBe('discard');
+  });
+  test('计划记录保留定位与完整词条', () => {
+    const r = buildPlan(snapshot(fullSet('a')), builds()).records[0];
+    expect(r.location).toBeDefined();
+    expect(r.subs.length).toBe(4);
+    expect(r.main.key).toBe('hpPlus');
+  });
   test('非五星作为材料，不进入分解清单', () => {
     const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })]), builds());
     expect(plan.records.find(r => r.id === 'four').category).toBe('fodder');
@@ -67,7 +94,7 @@ describe('配装分配与清单', () => {
     const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());
     expect(plan.counts.discard).toBe(0);
     expect(plan.records.find(r => r.id === 'x').category).toBe('review');
-    expect(plan.salvage.js).toBe('');
+    expect(plan.salvage.js).toBe('Output=false;');
   });
   test('锁定和穿戴件也参与计算，分解时注明需先处理', () => {
     const locked = item('lk', { locked: true, equippedBy: '刻晴', subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });

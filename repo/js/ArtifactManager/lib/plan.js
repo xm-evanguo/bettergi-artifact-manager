@@ -1,5 +1,5 @@
 import { normalizeSnapshot, SLOT_NAMES } from './model.js';
-import { referenceScore, grade, gradeMin } from './scoring.js';
+import { referenceScore, grade, gradeMin, potential, weightsFor } from './scoring.js';
 import { coreFor, hasCore } from './upgrade.js';
 import { buildSalvageFilter } from './salvage-filter.js';
 
@@ -53,7 +53,9 @@ export function buildPlan(input, buildsDoc) {
   const threshold = gradeMin(buildsDoc.graduateGrade || 'SSS');
   const blockers = [...snapshot.scan.issues];
   if (snapshot.scan.complete !== true) blockers.push('扫描未确认完整，不生成分解清单');
-  const characters = buildsDoc.characters.filter(c => c.builds.length).toSorted((a, b) => (b.level || 0) - (a.level || 0));
+  const characters = (Array.isArray(buildsDoc?.characters) ? buildsDoc.characters : []).filter(c => Array.isArray(c.builds) && c.builds.length).toSorted((a, b) => (b.level || 0) - (a.level || 0));
+  // 没有任何有效配装时，所有五星都会落入分解，必须关闭分解清单。
+  if (!characters.length) blockers.push('配装数据没有任何角色或玩法，不生成分解清单');
   const usable = snapshot.artifacts.filter(a => !a.issues.length && a.rarity === 5);
   const taken = new Map();
   const loadouts = [];
@@ -67,13 +69,16 @@ export function buildPlan(input, buildsDoc) {
       taken.set(a.id, { character: c.name, slot });
       return { slot, id: a.id, score: s, grade: grade(s), graduated: s >= threshold };
     });
-    loadouts.push({ name: c.name, level: c.level, set: lo.set, complete: lo.complete, slots });
+    loadouts.push({ name: c.name, level: c.level, build: lo.build, set: lo.set, complete: lo.complete, slots });
   };
   for (const round of [true, false]) {
     for (const c of characters) {
       if (loadouts.some(lo => lo.name === c.name)) continue;
-      const lo = bestLoadout(c, c.builds[0], usable.filter(a => !taken.has(a.id)));
-      if (lo.complete === round) assign(c, lo);
+      // 多套玩法时选总分最高的一套；每个角色只保留一套。
+      const pool = usable.filter(a => !taken.has(a.id));
+      const options = c.builds.map((b, index) => ({ ...bestLoadout(c, b, pool), build: index }));
+      const lo = options.filter(o => o.complete === round).reduce((x, o) => (!x || o.total > x.total ? o : x), null);
+      if (lo) assign(c, lo);
     }
   }
   loadouts.sort((a, b) => characters.indexOf(characters.find(c => c.name === a.name)) - characters.indexOf(characters.find(c => c.name === b.name)));
@@ -82,19 +87,22 @@ export function buildPlan(input, buildsDoc) {
   const upgrades = new Map();
   for (const lo of loadouts) {
     const c = characters.find(x => x.name === lo.name);
-    const core = coreFor(c, 0);
+    const build = c.builds[lo.build];
+    const core = coreFor(c, lo.build);
+    const weights = weightsFor(build, c);
     for (const s of lo.slots.filter(x => !x.graduated)) {
+      // 未满级件按强化潜力上限排序，不按当前分数，避免 +0 件因当前分低被淘汰。
       const candidates = usable
         .filter(a => a.slot === s.slot && a.level < 20 && !taken.has(a.id) && !upgrades.has(a.id))
-        .filter(a => c.builds[0].sets.includes(a.set) && mainFits(a, c.builds[0]) && hasCore(a, core))
-        .toSorted((x, y) => (referenceScore(y, c) ?? 0) - (referenceScore(x, c) ?? 0))
+        .filter(a => build.sets.includes(a.set) && mainFits(a, build) && hasCore(a, core))
+        .toSorted((x, y) => potential(y, weights).ceiling - potential(x, weights).ceiling)
         .slice(0, UPGRADE_PER_SLOT);
       for (const a of candidates) upgrades.set(a.id, { character: c.name, slot: s.slot, core, current: s.id });
     }
   }
 
   const records = snapshot.artifacts.map(a => {
-    const base = { id: a.id, name: a.name, set: a.set, slot: a.slot, level: a.level, rarity: a.rarity, locked: a.locked, equippedBy: a.equippedBy };
+    const base = { id: a.id, name: a.name, set: a.set, slot: a.slot, level: a.level, rarity: a.rarity, main: a.main, subs: a.subs, location: a.location, locked: a.locked, equippedBy: a.equippedBy };
     if (a.issues.length) return { ...base, category: 'review', reasons: a.issues };
     if (a.rarity !== 5) return { ...base, category: 'fodder', reasons: ['非五星，作强化材料'] };
     if (taken.has(a.id)) {
@@ -114,7 +122,8 @@ export function buildPlan(input, buildsDoc) {
   });
 
   const discards = snapshot.artifacts.filter(a => records.find(r => r.id === a.id).category === 'discard');
-  const salvage = discards.length ? buildSalvageFilter(discards, snapshot.artifacts) : { js: '', skipped: [] };
+  // 没有分解项时也输出只返回 false 的筛选脚本，覆盖上一次的旧脚本。
+  const salvage = discards.length ? buildSalvageFilter(discards, snapshot.artifacts) : { js: 'Output=false;', skipped: [] };
   const counts = { keep: 0, upgrade: 0, discard: 0, review: 0, fodder: 0 };
   records.forEach(r => counts[r.category]++);
   return {

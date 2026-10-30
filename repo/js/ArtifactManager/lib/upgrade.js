@@ -8,11 +8,11 @@ export const MAX_MISSES = 1;
 
 /**
  * 某套配装的核心副词条：配装写了 coreSubStats 就用它；
- * 第一套配装未写时取 miao 权重为 100 的副词条。
+ * 未写时取 miao 权重为 100 的副词条。
  */
 export function coreFor(character, index = 0) {
   const build = character.builds[index];
-  const core = build?.coreSubStats || (index === 0 ? coreSubStats(character.name) : null);
+  const core = build?.coreSubStats || coreSubStats(character.name);
   if (!core?.length) throw new Error(`${character.name} 第 ${index + 1} 套配装缺少核心副词条。`);
   return core;
 }
