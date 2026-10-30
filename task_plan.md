@@ -4,7 +4,7 @@
 建立独立 BetterGI JavaScript 项目，复用社区模块，实现无损读取、离线分析与报告，不执行分解或强化。
 
 ## Next Step
-已获得用户明确推送授权；提交并推送 main，等待工作流同步 release，并核对远程内容。
+在 Windows 的 BetterGI 配置本仓库并导入示例，随后验收游戏 OCR 和真实库存。
 
 ### Phase 1 项目和复用依据
 **Status:** complete
@@ -48,11 +48,11 @@
 - [x] 完成本地检查，明确远程发布状态：本轮尚未提交或推送
 
 ### Phase 7 远程发布
-**Status:** in_progress
+**Status:** complete
 - [x] 用户明确授权提交和推送
 - [x] 推送前重新通过 52 个测试和索引检查
-- [ ] 提交并推送 main
-- [ ] 核对工作流终态、release 分支和远程正文
+- [x] 提交并推送 main（a4b0eca）
+- [x] 工作流 validate/publish 均成功，main/release 提交一致，远程索引和 0.1.1 清单已回读
 
 ## Errors Encountered
 - 本轮 demo 首次写 output 被工作区沙箱拒绝（EPERM）；改用已授权项目的提权执行后通过。

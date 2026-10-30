@@ -24,3 +24,5 @@ Windows 实际导入、游戏扫描及真实清理效果尚未验收。浏览器
 2026-10-30：用户明确授权推送。已核对 origin/main 与本地基线一致，推送前重新运行测试（52 pass / 0 fail，137 次断言）及 bun run check，全部通过。开始提交并推送 main，随后核对工作流和 release。
 
 发布前检查发现许可证 CRLF 经 Git 转换会使远程索引失配，已在提交前修正；数据生成器保留上游原始 SHA-256，同时统一本地许可文本为 LF。补充对 Git 实际导出正文的索引验证，重新构建索引后回归。
+
+远程发布完成：实现提交 a4b0eca2b9fe1ad172233efbd8c43d99a127eddf 已推送 main。GitHub Actions 运行 41019073562 的 validate 与 publish 均 success；远程 main/release 均指向该提交。通过 GitHub 连接器回读 release/repo.json 及 repo/js/ArtifactManager/manifest.json，确认版本 0.1.1、脚本路径和 saved_files 声明正常。工作流：https://github.com/xm-evanguo/bettergi-artifact-manager/actions/runs/41019073562 。Windows 实际加载与游戏扫描仍待验收。
