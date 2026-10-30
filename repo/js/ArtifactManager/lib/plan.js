@@ -171,7 +171,9 @@ export function buildPlan(input, buildsDoc) {
     const build = c.builds[lo.build];
     const weights = buildWeights(c, build);
     const options = lo.slots.map(s => {
-      const current = s.id ? [{ set: usable.find(a => a.id === s.id).set, score: s.score }] : [];
+      // 当前件已进入强化队列时同样按满级期望计分，否则强化后预计会停在强化前的分数。
+      const cur = s.id && usable.find(a => a.id === s.id);
+      const current = cur ? [{ set: cur.set, score: upgrades.has(cur.id) ? Math.max(s.score, referenceScore(expectedFinal(cur), c, weights) ?? 0) : s.score }] : [];
       const pieces = [...upgrades].filter(([id, u]) => u.character === c.name && u.slot === s.slot && id !== s.id).map(([id]) => usable.find(a => a.id === id));
       return [...current, ...pieces.map(a => ({ set: a.set, score: referenceScore(expectedFinal(a), c, weights) ?? 0 }))];
     });

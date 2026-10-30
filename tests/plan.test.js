@@ -249,6 +249,15 @@ describe('刷取优先级', () => {
     expect(f.complete).toBe(false);
     expect(f.total).toBeCloseTo(plan.loadouts[0].slots.reduce((n, s) => n + s.score, 0), 1);
   });
+  test('已选用但未满级的当前件，强化后预计按满级期望计分', () => {
+    const set = fullSet('a', 2);
+    // 花只有 +4，副词条带双暴；没有其他候选件，预计分只能来自它自己强化到满级。
+    set[0] = { ...set[0], level: 4, main: { key: 'hpPlus', value: 1530 }, subs: [sub('cpct', 1), sub('cdmg', 1), sub('atk', 1), sub('def', 1)] };
+    const plan = buildPlan(snapshot(set), builds());
+    expect(plan.records.find(r => r.id === 'a0').category).toBe('upgrade');
+    const flower = plan.farming[0].slots[0];
+    expect(flower.projected).toBeGreaterThan(flower.now);
+  });
   test('按强化后预计总分从低到高排列，报告列出刷取表', () => {
     const plan = buildPlan(snapshot([...fullSet('a', 4), ...fullSet('b', 1)]), builds([{ name: '雷电将军', level: 90 }, { name: '刻晴', level: 80 }]));
     expect(plan.farming).toHaveLength(2);
