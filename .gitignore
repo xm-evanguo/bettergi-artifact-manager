@@ -1,6 +1,8 @@
 node_modules/
 dist/
 output/
-script/ArtifactManager/saved_files/*
-!script/ArtifactManager/saved_files/.gitkeep
+repo/js/ArtifactManager/saved_files/*
+!repo/js/ArtifactManager/saved_files/.gitkeep
 .DS_Store
+packages/*.zip
+packages/*.sha256

@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
-import { analyze } from '../script/ArtifactManager/lib/analyze.js';
-import { renderReport } from '../script/ArtifactManager/lib/report.js';
+import { analyze } from '../repo/js/ArtifactManager/lib/analyze.js';
+import { renderReport } from '../repo/js/ArtifactManager/lib/report.js';
 import { item, config, snapshot } from './helpers.js';
 
 test('报告的真实内联脚本可搜索、筛选与排序', () => {

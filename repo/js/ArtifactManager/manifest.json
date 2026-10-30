@@ -1,13 +1,21 @@
 {
   "manifest_version": 1,
   "name": "圣遗物整理助手（本地原型）",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "bgi_version": "0.66.0",
   "description": "读取快照并输出保留、试强化与清理建议。默认演示模式；实验扫描仅采集数据，不分解、不强化。",
-  "authors": [{ "name": "本地项目" }],
+  "authors": [
+    {
+      "name": "本地项目"
+    }
+  ],
   "main": "main.js",
   "settings_ui": "settings.json",
-  "library": ["."],
-  "saved_files": ["saved_files/*"],
+  "library": [
+    "."
+  ],
+  "saved_files": [
+    "saved_files/*"
+  ],
   "http_allowed_urls": []
 }

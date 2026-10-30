@@ -1,7 +1,7 @@
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
 import { resolve, join } from 'node:path';
-import { analyze } from '../script/ArtifactManager/lib/analyze.js';
-import { renderReport } from '../script/ArtifactManager/lib/report.js';
+import { analyze } from '../repo/js/ArtifactManager/lib/analyze.js';
+import { renderReport } from '../repo/js/ArtifactManager/lib/report.js';
 
 /** 本地命令行入口；与 BetterGI 使用同一决策层。 */
 const args = process.argv.slice(2);

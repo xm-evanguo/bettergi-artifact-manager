@@ -7,8 +7,8 @@ import { writeFile } from 'node:fs/promises';
  */
 const COMMIT = '929269ce17497bb4f6478f1dd785481744f05ee0';
 const RAW = `https://raw.githubusercontent.com/yoimiya-kokomi/miao-plugin/${COMMIT}/`;
-const OUTPUT = 'script/ArtifactManager/vendor/miao-data.js';
-const LICENSE = 'script/ArtifactManager/vendor/miao-plugin.LICENSE';
+const OUTPUT = 'repo/js/ArtifactManager/vendor/miao-data.js';
+const LICENSE = 'repo/js/ArtifactManager/vendor/miao-plugin.LICENSE';
 const files = {};
 
 /** 下载一个上游文件并记录 SHA-256；缺失时返回 null。 */
@@ -68,7 +68,8 @@ for (const name of Object.keys(usefulAttr)) {
 }
 
 // 许可证随数据一起更新，确保与数据来自同一提交。
-await writeFile(LICENSE, await fetchText('LICENSE'));
+// 仅统一本地许可文本的换行；source.files 仍记录上游原始下载的哈希。
+await writeFile(LICENSE, (await fetchText('LICENSE')).replace(/\r\n/g, '\n'));
 const source = { repository: 'yoimiya-kokomi/miao-plugin', commit: COMMIT, license: 'MIT', files };
 const header = `// 由 tools/build-miao-data.js 生成，请勿手动修改。\n// 数据来自 miao-plugin（MIT 许可），版权声明与许可全文见 miao-plugin.LICENSE。\n`;
 await writeFile(OUTPUT, `${header}export default ${JSON.stringify({ source, basicNum, attrPct, usefulAttr, characters }, null, 2)};\n`);

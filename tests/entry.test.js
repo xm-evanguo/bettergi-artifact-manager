@@ -1,12 +1,12 @@
 import { test, expect } from 'bun:test';
 import { readFileSync } from 'node:fs';
-import { analyze } from '../script/ArtifactManager/lib/analyze.js';
-import { renderReport } from '../script/ArtifactManager/lib/report.js';
-import { scanInventory } from '../script/ArtifactManager/lib/scan.js';
+import { analyze } from '../repo/js/ArtifactManager/lib/analyze.js';
+import { renderReport } from '../repo/js/ArtifactManager/lib/report.js';
+import { scanInventory } from '../repo/js/ArtifactManager/lib/scan.js';
 
 /** 在受控函数内执行真实入口，宿主文件由内存替代；无需启动 BetterGI。 */
 function entry(settings = {}, overrides = {}) {
-  const root = new URL('../script/ArtifactManager/', import.meta.url);
+  const root = new URL('../repo/js/ArtifactManager/', import.meta.url);
   const memory = new Map(['data/demo-config.json', 'data/demo-snapshot.json', 'data/default-config.json'].map(p => [p, readFileSync(new URL(p, root), 'utf8')]));
   const file = { createDirectory: () => true, readTextSync: p => { if (!memory.has(p)) throw new Error(`文件不存在 ${p}`); return memory.get(p); }, isFile: p => memory.has(p), writeTextSync: (p, s) => { memory.set(p, s); return true; }, ...overrides };
   const code = readFileSync(new URL('main.js', root), 'utf8').replace(/^import .*;\n/gm, '').replace('await (async function main()', 'return (async function main()');

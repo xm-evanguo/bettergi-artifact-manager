@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
-import { scanInventory } from '../script/ArtifactManager/lib/scan.js';
-import { parsePanel } from '../script/ArtifactManager/lib/ocr.js';
+import { scanInventory } from '../repo/js/ArtifactManager/lib/scan.js';
+import { parsePanel } from '../repo/js/ArtifactManager/lib/ocr.js';
 
 const panel = '虚构之花\n生之花\n生命值\n4,780\n+20\n暴击率+3.9%\n暴击伤害+7.8%\n攻击力+5.8%\n元素充能效率+6.5%\n绝缘之旗印:\n2件套:元素充能效率提高20%';
 

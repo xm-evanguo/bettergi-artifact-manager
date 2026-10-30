@@ -1,6 +1,6 @@
-# 圣遗物整理助手 0.1.0
+# 圣遗物整理助手 0.1.1
 
-这是本地原型。将整个 `ArtifactManager` 文件夹放入 BetterGI 的 `User/JsScript`，在 JS 脚本任务中添加；不要只复制 main.js，也不要用于内置自动分解表达式。
+这是原型。通过 BetterGI 的远程脚本仓库导入本项目；仓库为 https://github.com/xm-evanguo/bettergi-artifact-manager ，分支为 `release`，脚本路径为 `js/ArtifactManager`。完整安装步骤见[项目说明](https://github.com/xm-evanguo/bettergi-artifact-manager#readme)。不要只复制 main.js，也不要用于内置自动分解表达式。
 
 ## 首次运行
 
@@ -23,4 +23,4 @@
 
 本项目不执行分解、强化、解锁或卸装。报告旧坐标会在排序、强化后失效。未实现攻略自动更新和全局最优配装。
 
-完整规划、数据格式和开发命令位于开发仓库根目录。评分数据来自 miao-plugin（MIT），版本见 upstream-lock.json，许可记录见 THIRD_PARTY.md 和 vendor/miao-plugin.LICENSE。
+真实数据只放在 `saved_files`，不要提交到仓库。清单已声明该目录供宿主更新保留，更新前可自行备份。评分数据来自 miao-plugin（MIT），版本见 [upstream-lock.json](upstream-lock.json)，许可记录见 [THIRD_PARTY.md](THIRD_PARTY.md) 和 [MIT 许可证](vendor/miao-plugin.LICENSE)。

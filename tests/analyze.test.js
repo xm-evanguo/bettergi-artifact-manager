@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'bun:test';
-import { analyze } from '../script/ArtifactManager/lib/analyze.js';
-import { normalizeSnapshot } from '../script/ArtifactManager/lib/model.js';
-import { potential, referenceScore } from '../script/ArtifactManager/lib/scoring.js';
-import { renderReport } from '../script/ArtifactManager/lib/report.js';
+import { analyze } from '../repo/js/ArtifactManager/lib/analyze.js';
+import { normalizeSnapshot } from '../repo/js/ArtifactManager/lib/model.js';
+import { potential, referenceScore } from '../repo/js/ArtifactManager/lib/scoring.js';
+import { renderReport } from '../repo/js/ArtifactManager/lib/report.js';
 import { item, config, snapshot } from './helpers.js';
 
 /** 稳定的强弱对照件，弱件只能引用永久保留的满级替代件。 */

@@ -2,7 +2,7 @@
 
 ## 库存快照
 
-标准格式为 `schemaVersion: 1`，顶层含 `scan` 和 `artifacts`，完整例子见 [虚构示例](../script/ArtifactManager/data/demo-snapshot.json)。
+标准格式为 `schemaVersion: 1`，顶层含 `scan` 和 `artifacts`，完整例子见 [虚构示例](../repo/js/ArtifactManager/data/demo-snapshot.json)。
 
 `scan` 至少需要 `id`、`total`、`complete`、`verified` 和 `issues`；可补充 `capacity`、游戏版本、分辨率和时间。`complete` 表示扫描覆盖完整，`verified` 表示已核对该扫描；仅在没有漏扫、重复和误读的证据下才能设为 `true`，不能只为开启清理而修改标记。
 

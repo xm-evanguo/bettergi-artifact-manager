@@ -2,7 +2,7 @@
 
 一个独立的 BetterGI 脚本项目，用于分析圣遗物库存，给出保留、试强化和清理建议。角色权重与参考分数据来自 miao-plugin（MIT）。
 
-当前为本地原型：可以分析库存快照，生成整理报告和强化顺序；游戏内识别扫描尚未在 Windows 实机验收。本项目不会执行分解、强化、解锁或卸下装备。
+当前为原型：可以分析库存快照，生成整理报告和强化顺序；游戏内识别扫描尚未在 Windows 实机验收。本项目不会执行分解、强化、解锁或卸下装备。
 
 ## 快速体验
 
@@ -16,17 +16,58 @@ bun run demo
 
 然后打开 `output/demo/report.html`。示例包含 9 件虚构圣遗物，结果为保留 6 件、优先试强化 1 件、可清理 2 件。示例与你的账号无关，示例角色规则只用于演示，不是当前版本攻略。
 
-## 安装到 BetterGI
+## 从 BetterGI 远程导入
 
-```sh
-bun run package
+仓库地址：
+
+```text
+https://github.com/xm-evanguo/bettergi-artifact-manager
 ```
 
-把生成的 `dist/ArtifactManager` 整个文件夹复制到 Windows 上 BetterGI 的 `User/JsScript/ArtifactManager`，再在脚本任务中添加该项目。不要只复制 `main.js`，也不要粘贴到内置“自动分解”的表达式框中。
+发布分支为 `release`，脚本相对路径为 `js/ArtifactManager`。远程导入会自动下载脚本，无需安装 Bun，也无需手动下载安装包。首次使用前确认远程已有 `release` 分支且“验证和同步脚本仓库”工作流通过；尚未推送的本地修改不能被远程导入。
 
-首次运行请选择“示例报告”，确认脚本能正常加载。报告保存在脚本目录的 `saved_files/report-时间戳.html`，同时生成同名数据文件。示例模式不读取游戏画面。
+### 官方版的自定义仓库入口
 
-目录结构和接口已对照 BetterGI 0.66.3-alpha.1 源码核对，但尚未在 Windows 上实际导入运行。
+1. 打开 BetterGI 的脚本仓库窗口，在更新渠道选择“自定义”。
+2. 填入上面的仓库地址，点击更新仓库。官方主线固定拉取 `release` 分支。
+3. 在仓库列表的 JS 分类找到 `ArtifactManager`（圣遗物整理助手），选择导入或订阅。
+4. 在 JS 脚本任务中添加项目，首次选择“示例报告”。
+
+这会切换当前脚本仓库源；本仓库只有圣遗物整理助手。需要浏览官方脚本时切回原来的渠道。不同 BetterGI 版本的按钮名称可能不同。
+
+切换到本仓库并更新成功后，也可复制下面的订阅链接，使用 BetterGI 的剪贴板订阅提示导入：
+
+```text
+bettergi://script?import=JTVCJTIyanMlMkZBcnRpZmFjdE1hbmFnZXIlMjIlNUQ%3D
+```
+
+该链接只包含 `js/ArtifactManager` 相对路径，不能代替仓库源配置，也不会自动切换来源。未配置本仓库时请勿直接使用。
+
+### 带“仓库管理”的本地分支
+
+在仓库管理中添加远程仓库，填入上面的地址，分支填 `release`，同步后从该来源添加 JS 任务。该入口可与官方来源并存，但不是所有已安装版本都有。其工作目录由宿主管理，不要假定与旧版路径相同。
+
+旧版导入通常写入 `User/JsScript/ArtifactManager`。不要把代码粘贴到内置“自动分解”表达式框。报告在脚本工作目录的 `saved_files` 下；更新前可自行备份该目录。清单已声明 `saved_files/*` 供 BetterGI 更新时保留库存、配置和报告。
+
+目录和 Git 内容树已按宿主源码核对，并以临时 Git 仓库模拟导入；Windows 上的实际导入与游戏扫描仍待验收。
+
+## 开发与发布
+
+脚本唯一源码位于 `repo/js/ArtifactManager`，根目录 `repo.json` 供 BetterGI 建立列表。许可证和上游固定版本记录随脚本一起分发。不再生成或提交 ZIP 安装包。
+
+修改脚本后执行：
+
+```sh
+bun run build:repo
+bun test
+bun run check
+```
+
+将源码与 `repo.json` 一起提交并推送到 `main`。“验证和同步脚本仓库”工作流通过后，会把同一个提交快进到 `release`；不创建 GitHub Release，不强推覆盖分支，也不重复存放脚本源码。`main` 和 `release` 都具有有效的仓库布局，官方入口使用 `release`。
+
+正文不变时生成索引保持稳定；任何公开脚本文件变化都会更新内容指纹和更新时间。发布功能更新时还应增加 manifest 和 package.json 的版本号。CI 会拒绝过期索引，以及被 Git 跟踪的真实 `saved_files` 或 ZIP 安装包。
+
+GitHub Actions 必须启用，并允许该工作流写入仓库内容；分支保护若禁止机器人更新 `release`，同步会失败。维护者核对通过后也可手动执行 `git push origin main:release`，不要使用强推。已有独立提交导致不能快进时，先检查分支差异。
 
 ## 三种运行方式
 
@@ -42,7 +83,7 @@ bun run package
 
 ## 配置自己的角色
 
-把 `script/ArtifactManager/data/default-config.json` 复制为脚本目录中的 `saved_files/config.json`。主力角色、备用角色和空位目标可以在 BetterGI 设置中填写，也可以写在配置文件中。字段说明见[数据与规则](docs/DATA.md)。
+把 `repo/js/ArtifactManager/data/default-config.json` 复制为脚本目录中的 `saved_files/config.json`。主力角色、备用角色和空位目标可以在 BetterGI 设置中填写，也可以写在配置文件中。字段说明见[数据与规则](docs/DATA.md)。
 
 当前版本需要手动填写玩法规则，但不需要修改脚本代码。不要把示例配置用于真实清理；真实模式会拒绝带有示例标记的配置。
 
@@ -81,4 +122,4 @@ bun tools/analyze.js <库存.json> <配置.json> <输出目录>
 
 ## 授权说明
 
-评分数据由 `bun run data` 从固定提交的 [miao-plugin](https://github.com/yoimiya-kokomi/miao-plugin)（MIT）生成，许可证全文见 `script/ArtifactManager/vendor/miao-plugin.LICENSE`。详情见[上游模块与授权](docs/THIRD_PARTY.md)。
+评分数据由 `bun run data` 从固定提交的 [miao-plugin](https://github.com/yoimiya-kokomi/miao-plugin)（MIT）生成，许可证全文见 `repo/js/ArtifactManager/vendor/miao-plugin.LICENSE`。详情见[上游模块与授权](docs/THIRD_PARTY.md)。

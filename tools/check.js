@@ -1,8 +1,10 @@
 import { readFile, readdir, access } from 'node:fs/promises';
 import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { verifyRepositoryIndex } from './build-repo.js';
 
 /** 检查所有模块能由浏览器目标打包，防止宿主项目混入 Bun 或 Node 依赖。 */
-const root = 'script/ArtifactManager';
+const root = 'repo/js/ArtifactManager';
 const manifest = JSON.parse(await readFile(`${root}/manifest.json`, 'utf8'));
 for (const name of [manifest.main, manifest.settings_ui, 'data/default-config.json', 'data/demo-config.json', 'data/demo-snapshot.json']) await access(`${root}/${name}`);
 const settings = JSON.parse(await readFile(`${root}/${manifest.settings_ui}`, 'utf8'));
@@ -21,4 +23,8 @@ async function inspect(dir) {
   }
 }
 await inspect(root);
-console.log('模块、JSON、设置和编码检查通过。');
+await verifyRepositoryIndex();
+// 即使有人用 git add -f，也拒绝把保存数据和安装包纳入发布分支。
+const published = execFileSync('git', ['ls-files', '-z', '--', 'repo', 'packages'], { encoding: 'utf8' }).split('\0').filter(Boolean);
+if (published.some(path => (path.includes('/saved_files/') && !path.endsWith('/saved_files/.gitkeep')) || /\.(zip|sha256)$/i.test(path))) throw new Error('Git 已跟踪真实保存数据或安装包，不能发布。');
+console.log('模块、JSON、设置、编码、远程索引与发布数据检查通过。');
