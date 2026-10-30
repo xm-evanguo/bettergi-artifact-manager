@@ -48,6 +48,8 @@ function bestLoadout(character, build, pool) {
  */
 export function buildPlan(input, buildsDoc) {
   const snapshot = normalizeSnapshot(input);
+  // 背包面板读不出锁定状态；锁定件游戏本身不允许分解，所以锁定未知不阻止计算。
+  for (const a of snapshot.artifacts) a.issues = a.issues.filter(x => x !== '锁定状态未知');
   const threshold = gradeMin(buildsDoc.graduateGrade || 'SSS');
   const blockers = [...snapshot.scan.issues];
   if (snapshot.scan.complete !== true) blockers.push('扫描未确认完整，不生成分解清单');
