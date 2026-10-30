@@ -1,0 +1,98 @@
+{
+  "demo": true,
+  "characters": [
+    {
+      "name": "雷电将军",
+      "priority": "main"
+    },
+    {
+      "name": "香菱",
+      "priority": "reserve"
+    }
+  ],
+  "rosterConfirmed": true,
+  "reservePerCharacter": 1,
+  "targetFreeSlots": 5,
+  "rules": {
+    "雷电将军": [
+      {
+        "id": "虚构测试玩法",
+        "sets": [
+          "绝缘之旗印"
+        ],
+        "mainStats": {
+          "0": [
+            "hpPlus"
+          ],
+          "1": [
+            "atkPlus"
+          ],
+          "2": [
+            "atk",
+            "recharge"
+          ],
+          "3": [
+            "electro",
+            "atk"
+          ],
+          "4": [
+            "cpct",
+            "cdmg"
+          ]
+        },
+        "weights": {
+          "atk": 75,
+          "recharge": 75,
+          "cpct": 100,
+          "cdmg": 100,
+          "hp": 0,
+          "def": 0,
+          "mastery": 0
+        },
+        "reviewed": true,
+        "source": "https://example.invalid/test-only",
+        "version": "虚构测试规则"
+      }
+    ],
+    "香菱": [
+      {
+        "id": "虚构测试玩法",
+        "sets": [
+          "绝缘之旗印"
+        ],
+        "mainStats": {
+          "0": [
+            "hpPlus"
+          ],
+          "1": [
+            "atkPlus"
+          ],
+          "2": [
+            "atk",
+            "recharge"
+          ],
+          "3": [
+            "electro",
+            "atk"
+          ],
+          "4": [
+            "cpct",
+            "cdmg"
+          ]
+        },
+        "weights": {
+          "atk": 75,
+          "recharge": 75,
+          "cpct": 100,
+          "cdmg": 100,
+          "hp": 0,
+          "def": 0,
+          "mastery": 0
+        },
+        "reviewed": true,
+        "source": "https://example.invalid/test-only",
+        "version": "虚构测试规则"
+      }
+    ]
+  }
+}

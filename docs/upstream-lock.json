@@ -1,0 +1,27 @@
+{
+  "fetchedAt": "2026-10-29",
+  "modules": [
+    {
+      "name": "miao-plugin",
+      "repository": "yoimiya-kokomi/miao-plugin",
+      "commit": "929269ce17497bb4f6478f1dd785481744f05ee0",
+      "paths": [
+        "resources/meta-gs/artifact/artis-mark.js",
+        "resources/meta-gs/artifact/extra.js",
+        "resources/meta-gs/character/data.json",
+        "resources/meta-gs/character/*/data.json",
+        "LICENSE"
+      ],
+      "license": "MIT",
+      "usage": "由 tools/build-miao-data.js 生成 vendor/miao-data.js；各文件 SHA-256 记录在生成文件的 source.files 中。参考分公式按 models/artis/ArtisMark.js 自行实现。"
+    },
+    {
+      "name": "OCRArtifacts",
+      "repository": "babalae/bettergi-scripts-list",
+      "path": "repo/js/OCRArtifacts/main.js",
+      "blob": "5d069763637c695308fe0ef895edb0cd72cedf92",
+      "usage": "仅参考固定网格坐标与翻页参数，重写可中断扫描，未引入原解析器和素材。",
+      "license": "未找到独立许可证；不原样分发其代码。"
+    }
+  ]
+}

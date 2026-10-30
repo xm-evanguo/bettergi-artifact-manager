@@ -1,0 +1,373 @@
+{
+  "schemaVersion": 1,
+  "scan": {
+    "id": "fictional",
+    "total": 9,
+    "capacity": 9,
+    "complete": true,
+    "verified": true,
+    "issues": []
+  },
+  "artifacts": [
+    {
+      "id": "demo-001",
+      "name": "虚构花",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 15.6,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-001"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-002",
+      "name": "虚构花",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-002"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-003",
+      "name": "虚构花",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-003"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-004",
+      "name": "虚构花",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-004"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-005",
+      "name": "虚构潜力件",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 0,
+      "main": {
+        "key": "hpPlus",
+        "value": 717
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 6.5,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-005"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-006",
+      "name": "虚构锁定件",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": true,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-006"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-007",
+      "name": "虚构穿戴件",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "雷电将军",
+      "location": {
+        "ordinal": "demo-007"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-008",
+      "name": "虚构元素杯",
+      "set": "绝缘之旗印",
+      "slot": 3,
+      "rarity": 5,
+      "level": 20,
+      "main": {
+        "key": "electro",
+        "value": 46.6
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-008"
+      },
+      "rawOcr": "虚构测试记录"
+    },
+    {
+      "id": "demo-009",
+      "name": "虚构过渡件",
+      "set": "绝缘之旗印",
+      "slot": 0,
+      "rarity": 4,
+      "level": 16,
+      "main": {
+        "key": "hpPlus",
+        "value": 4780
+      },
+      "subs": [
+        {
+          "key": "cpct",
+          "value": 3.9,
+          "active": true
+        },
+        {
+          "key": "cdmg",
+          "value": 7.8,
+          "active": true
+        },
+        {
+          "key": "atk",
+          "value": 5.8,
+          "active": true
+        },
+        {
+          "key": "recharge",
+          "value": 19.4,
+          "active": true
+        }
+      ],
+      "locked": false,
+      "equippedBy": "",
+      "location": {
+        "ordinal": "demo-009"
+      },
+      "rawOcr": "虚构测试记录"
+    }
+  ]
+}
