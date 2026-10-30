@@ -26,3 +26,9 @@
 运行接口按 BetterGI 主程序源码 `875a941e` / 0.66.3-alpha.1 核对：Manifest、SettingItem、LimitedFile、EngineExtend、ScriptProject 和 ScriptExecution。没有复制或修改主程序 C#。
 
 入口采用模块顶层 await，让宿主等待异步扫描结束；依据同仓库的模块生命周期测试及执行器接口，仍需 Windows 验证实际运行。
+
+## 圣遗物辅助（ArtifactsAssistant）角色一览
+
+[上游文件](https://github.com/babalae/bettergi-scripts-list/blob/79c668e41a633a642308ee9b79f3193568564881/repo/js/ArtifactsAssistant/角色一览.md)，作者 756yang，固定提交 `79c668e4`，SHA-256 `dd76ae15…bcbc`（全文见 upstream-lock.json）。
+
+`data/builds.json` 中 40 名角色的套装、主词条和副词条按该文件整理为结构化数据，未复制原文件。上游未声明许可证，因此本数据仅供私有仓库个人使用，不公开分发。其余 5 名角色按条目内列出的公开攻略整理。

@@ -22,6 +22,15 @@
       "blob": "5d069763637c695308fe0ef895edb0cd72cedf92",
       "usage": "仅参考固定网格坐标与翻页参数，重写可中断扫描，未引入原解析器和素材。",
       "license": "未找到独立许可证；不原样分发其代码。"
+    },
+    {
+      "name": "ArtifactsAssistant 角色一览",
+      "repository": "babalae/bettergi-scripts-list",
+      "commit": "79c668e41a633a642308ee9b79f3193568564881",
+      "path": "repo/js/ArtifactsAssistant/角色一览.md",
+      "sha256": "dd76ae15a6904ba798417c2fe7e0b6932bb18c420eac654117ed13f15890bcbc",
+      "usage": "整理为 data/builds.json 中 40 名角色的套装、主词条与副词条；不复制原文件。",
+      "license": "未声明许可证；仅限本私有仓库个人使用，不公开分发。"
     }
   ]
 }
