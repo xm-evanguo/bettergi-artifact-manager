@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-10-30",
-  "description": "账号内 50 级及以上角色的圣遗物需求。sets 为可选 4 件套（按推荐顺序）；mainStats 为时之沙、空之杯、理之冠可接受的主词条；subStats 为副词条优先级。词条键与 lib/model.js 一致。",
+  "description": "账号内 50 级及以上角色（不含旅行者）的圣遗物需求。sets 为可选 4 件套（按推荐顺序）；mainStats 为时之沙、空之杯、理之冠可接受的主词条；subStats 为副词条优先级。词条键与 lib/model.js 一致。",
   "characters": [
     {
       "name": "芙宁娜",
@@ -1030,14 +1030,6 @@
       "sources": [
         "圣遗物辅助（ArtifactsAssistant，756yang）角色一览.md"
       ]
-    },
-    {
-      "name": "旅行者",
-      "level": 90,
-      "element": "multi",
-      "pending": "元素未确认，需要填写当前使用的旅行者元素后再补配装",
-      "builds": [],
-      "sources": []
     },
     {
       "name": "莱依拉",
