@@ -225,7 +225,29 @@ describe('刷取优先级', () => {
     expect(f.subs[0].value).toBeCloseTo(7.8 + 5 / 4 * 0.85 * 7.77, 1);
     const three = expectedFinal({ ...a, subs: [sub('cdmg', 1), sub('atk', 1), { ...sub('def', 1), active: false }] });
     expect(three.subs.every(s => s.active)).toBe(true);
-    expect(three.subs[0].value).toBeCloseTo(7.8 + 4 / 3 * 0.85 * 7.77, 1);
+    expect(three.subs[0].value).toBeCloseTo(7.8 + 4 / 4 * 0.85 * 7.77, 1);
+    // 三词条且第四词条未知：其余可能词条均摊一次激活与后续强化的期望值。
+    const open = expectedFinal({ ...a, subs: [sub('cdmg', 1), sub('atk', 1), sub('def', 1)] });
+    const extra = open.subs.slice(3);
+    expect(extra.length).toBe(6);
+    expect(extra.every(s => s.active && s.value > 0)).toBe(true);
+    expect(extra.find(s => s.key === 'mastery').value).toBeCloseTo((1 + 4 / 4) * 0.85 * 23.31 / 6, 1);
+    // 四星：+16 满级，副词条档位按 0.8 倍。
+    const four = expectedFinal({ ...a, rarity: 4, main: { key: 'cpct', value: 4.2 } });
+    expect(four.level).toBe(16);
+    expect(four.main.value).toBe(23.2);
+    expect(four.subs[0].value).toBeCloseTo(7.8 + 4 / 4 * 0.85 * 7.77 * 0.8, 1);
+  });
+  test('多套装可选时，预计分只取能凑成 4 件同套的组合', () => {
+    const doc = builds();
+    doc.characters[0].builds[0].sets = ['绝缘之旗印', '烬城勇者绘卷'];
+    // 两个套装各只有部分部位，逐部位取最高分无法成套；只能选一套并以散件补齐。
+    const a = fullSet('a', 2).slice(0, 3);
+    const b = fullSet('b', 4).slice(3).map(x => ({ ...x, set: '烬城勇者绘卷' }));
+    const plan = buildPlan(snapshot([...a, ...b]), doc);
+    const f = plan.farming[0];
+    expect(f.complete).toBe(false);
+    expect(f.total).toBeCloseTo(plan.loadouts[0].slots.reduce((n, s) => n + s.score, 0), 1);
   });
   test('按强化后预计总分从低到高排列，报告列出刷取表', () => {
     const plan = buildPlan(snapshot([...fullSet('a', 4), ...fullSet('b', 1)]), builds([{ name: '雷电将军', level: 90 }, { name: '刻晴', level: 80 }]));

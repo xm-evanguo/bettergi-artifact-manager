@@ -20,21 +20,31 @@ const MAX_LEVEL = { 5: 20, 4: 16 };
 const UPGRADE_PER_SLOT = 2;
 
 /**
- * 强化到满级的期望面板，只用于刷取排序：主词条取满级数值；剩余强化次数先激活待激活词条，
- * 其余按平均值（单次最大值的 0.85 倍）平均分到已有副词条上。不是实际强化结果。
+ * 强化到满级的期望面板，只用于刷取排序，不是实际强化结果：
+ * - 主词条取满级数值；
+ * - 剩余强化次数先激活第四词条，其余每次按平均档位（单次最大值的 0.85 倍）平均落到 4 条副词条上；
+ * - 四星副词条档位约为五星的 0.8 倍；
+ * - 三词条且第四词条未知时，按所有可能词条均摊该词条的期望值。
  */
 export function expectedFinal(a) {
   const max = MAX_LEVEL[a.rarity];
   if (!max || a.level >= max) return a;
+  const avg = k => 0.85 * MAX_ROLL[k] * (a.rarity === 4 ? 0.8 : 1);
   let rolls = max / 4 - Math.floor(a.level / 4);
   const subs = a.subs.map(s => ({ ...s }));
+  let unknown = false;
   if (subs.filter(s => s.active).length < 4) {
     const pending = subs.find(s => !s.active);
     if (pending) pending.active = true;
+    else unknown = true;
     rolls--;
   }
-  const active = subs.filter(s => s.active);
-  for (const s of active) s.value += rolls / active.length * 0.85 * MAX_ROLL[s.key];
+  const share = rolls / 4;
+  for (const s of subs.filter(x => x.active)) s.value += share * avg(s.key);
+  if (unknown) {
+    const keys = Object.keys(MAX_ROLL).filter(k => k !== a.main.key && !subs.some(s => s.key === k));
+    for (const k of keys) subs.push({ key: k, value: (1 + share) * avg(k) / keys.length, active: true });
+  }
   return { ...a, level: max, main: { ...a.main, value: mainAtMax(a.main.key, a.rarity) ?? a.main.value }, subs };
 }
 
@@ -153,19 +163,32 @@ export function buildPlan(input, buildsDoc) {
     }
   }
 
-  // 刷取优先级：每个部位取「当前件」与「强化候选件」强化到满级的期望分中较高者，
-  // 按角色总分从低到高排序；分数低的角色最需要继续刷对应套装。
+  // 刷取优先级：每个部位的选项为当前件（当前分）与强化候选件（满级期望分）。
+  // 对配装的每个可选套装，在能凑成 4 件该套装 + 1 件任意散件的组合中取总分最高者；
+  // 都凑不成时逐部位取最高分并标记未成套。按角色总分从低到高排序，分数低的最需要继续刷。
   const farming = loadouts.map(lo => {
     const c = characters.find(x => x.name === lo.name);
     const build = c.builds[lo.build];
     const weights = buildWeights(c, build);
-    const slots = lo.slots.map(s => {
-      const pieces = [...upgrades].filter(([, u]) => u.character === c.name && u.slot === s.slot).map(([id]) => usable.find(a => a.id === id));
-      const projected = Math.max(s.score, ...pieces.map(a => referenceScore(expectedFinal(a), c, weights) ?? 0));
-      return { slot: s.slot, now: s.score, projected: Math.round(projected * 10) / 10, graduated: projected >= threshold };
+    const options = lo.slots.map(s => {
+      const current = s.id ? [{ set: usable.find(a => a.id === s.id).set, score: s.score }] : [];
+      const pieces = [...upgrades].filter(([id, u]) => u.character === c.name && u.slot === s.slot && id !== s.id).map(([id]) => usable.find(a => a.id === id));
+      return [...current, ...pieces.map(a => ({ set: a.set, score: referenceScore(expectedFinal(a), c, weights) ?? 0 }))];
     });
-    const total = Math.round(slots.reduce((n, s) => n + s.projected, 0) * 10) / 10;
-    return { name: lo.name, set: lo.set || build.sets[0], complete: lo.complete, now: Math.round(lo.slots.reduce((n, s) => n + s.score, 0) * 10) / 10, total, slots };
+    const bestAny = options.map(o => Math.max(0, ...o.map(x => x.score)));
+    let best = null;
+    for (const set of build.sets) {
+      const inSet = options.map(o => Math.max(-Infinity, ...o.filter(x => x.set === set).map(x => x.score)));
+      for (let off = 0; off < 5; off++) {
+        if (inSet.some((v, i) => i !== off && v === -Infinity)) continue;
+        const picks = inSet.map((v, i) => (i === off ? bestAny[i] : v));
+        const total = picks.reduce((n, v) => n + v, 0);
+        if (!best || total > best.total) best = { set, picks, total };
+      }
+    }
+    const picks = best ? best.picks : bestAny;
+    const slots = lo.slots.map((s, i) => ({ slot: s.slot, now: s.score, projected: Math.round(picks[i] * 10) / 10, graduated: picks[i] >= threshold }));
+    return { name: lo.name, set: best ? best.set : lo.set || build.sets[0], complete: !!best, now: Math.round(lo.slots.reduce((n, s) => n + s.score, 0) * 10) / 10, total: Math.round(picks.reduce((n, v) => n + v, 0) * 10) / 10, slots };
   }).sort((x, y) => x.total - y.total);
 
   const records = snapshot.artifacts.map(a => {

@@ -169,6 +169,8 @@ describe('背包扫描', () => {
   test('相邻两件属性完全相同时不误判为空格', async () => {
     const { host, items } = fakeBag({ count: 93, materials: 2 });
     items[50] = items[49]; items[51] = items[49]; items[2] = items[1];
+    // 视图开头前两件相同：没有更早的不同格可作参照，改用后一格判断。
+    items[1] = items[0];
     const r = await scanInventory(host);
     expect(r.scan.complete).toBe(true);
     expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);

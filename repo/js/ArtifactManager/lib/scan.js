@@ -95,7 +95,13 @@ export async function scanInventory(host, options = {}) {
         // 面板没变：可能点到空格，也可能是属性完全相同的另一件。先点本视图中面板不同的已读格子，再点回来：
         // 空格不会改变面板，仍显示那一格；相同的另一件会再次显示原文本。
         const q = [...Array(p).keys()].reverse().find(q => records[ordinal - 1 - p + q]?.rawOcr !== before);
-        if (q === undefined) {
+        if (q === undefined && p + 1 < PAGE) {
+          // 视图开头没有不同的已读格：改点后一格。后一格有不同物品，说明本格也有物品（网格连续），再点回本格读取；
+          // 后一格面板仍不变则无法区分，按末尾处理（视图开头连续 3 件完全相同才会误判）。
+          const next = await read({ ordinal, ...at(p + 1) });
+          if (next === before) { gridEnd = true; return; }
+          text = await read({ ordinal, ...c });
+        } else if (q === undefined) {
           await host.sleep(500);
           text = await read({ ordinal, ...c });
           if (text === before) { gridEnd = true; return; }

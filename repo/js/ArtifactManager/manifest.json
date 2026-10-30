@@ -1,7 +1,7 @@
 {
   "manifest_version": 1,
   "name": "圣遗物整理助手",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "bgi_version": "0.66.0",
   "description": "自动打开背包扫描全部圣遗物，按角色配装生成每个角色一套的整理计划、强化清单和分解筛选脚本。只读取，不分解、不强化。",
   "authors": [
