@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { readFileSync } from 'node:fs';
-import { recordRoll, nextAction, rolledKey, coreFor } from '../repo/js/ArtifactManager/lib/upgrade.js';
+import { recordRoll, nextAction, rolledKey, coreFor, coreForPiece } from '../repo/js/ArtifactManager/lib/upgrade.js';
 import { buildSalvageFilter } from '../repo/js/ArtifactManager/lib/salvage-filter.js';
 import { MAX_ROLL } from '../repo/js/ArtifactManager/lib/model.js';
 import { grade, gradeMin } from '../repo/js/ArtifactManager/lib/scoring.js';
@@ -146,5 +146,23 @@ describe('角色配装数据', () => {
 describe('评分档位', () => {
   test('与圣遗物实时评分脚本分档一致', () => {
     expect([6.9, 7, 41.9, 42, 48.9, 49, 56, 70].map(grade)).toEqual(['D', 'C', 'SS', 'SSS', 'SSS', 'ACE', 'MAX', 'MAX']);
+  });
+});
+
+describe('四星与主词条占用核心', () => {
+  test('四星 +16 即满级', () => {
+    const a = item('f', { rarity: 4, level: 16 });
+    expect(nextAction({ level: 16, misses: 0, artifact: a, core: ['cpct'] })).toBe('done');
+  });
+  test('主词条占用唯一核心属性时改用玩法其余副词条', () => {
+    const sands = item('s', { slot: 2, main: { key: 'hp', value: 46.6 } });
+    expect(coreForPiece(['hp'], sands, { subStats: ['hp', 'cpct', 'recharge'] })).toEqual(['cpct', 'recharge']);
+    expect(coreForPiece(['cpct', 'cdmg'], item('c', { slot: 4, main: { key: 'cpct', value: 31.1 } }), {})).toEqual(['cdmg']);
+  });
+  test('无法生成指纹的待复查件使同名同等级的分解件跳过，不中止', () => {
+    const bad = item('bad', { main: { key: undefined, value: 0 } });
+    const d = item('d');
+    const r = buildSalvageFilter([d], [d, bad]);
+    expect(r.skipped).toEqual([d]);
   });
 });

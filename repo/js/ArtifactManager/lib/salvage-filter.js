@@ -18,16 +18,20 @@ export function fingerprint(a) {
 /**
  * 生成 BetterGI「自动分解」的筛选 JS。只有与清单中某件完全一致的圣遗物才输出 true。
  * 筛选器看不到快照编号，属性完全相同的多件无法区分；库存中同指纹的件只要有一件不在分解清单，
- * 这一组全部不分解，并在 skipped 中列出。
+ * 这一组全部不分解，并在 skipped 中列出；与无法生成指纹的待复查件同名同等级的也跳过。
  * 锁定和穿戴中的圣遗物游戏本身不允许分解，因此清单外的保护由宿主和游戏共同保证。
  */
 export function buildSalvageFilter(discards, inventory) {
   const key = a => JSON.stringify(fingerprint(a));
-  const total = new Map(), chosen = new Map();
-  for (const a of inventory) total.set(key(a), (total.get(key(a)) || 0) + 1);
+  const loose = a => `${a.name}|${a.level}`;
+  const total = new Map(), chosen = new Map(), unknown = new Set();
+  for (const a of inventory) {
+    // 词条未识别的待复查件无法生成指纹；它可能与某件分解件属性相同，同名同等级的分解件一律跳过。
+    try { total.set(key(a), (total.get(key(a)) || 0) + 1); } catch { unknown.add(loose(a)); }
+  }
   for (const a of discards) chosen.set(key(a), (chosen.get(key(a)) || 0) + 1);
   const safe = [], skipped = [];
-  for (const a of discards) (chosen.get(key(a)) === total.get(key(a)) ? safe : skipped).push(a);
+  for (const a of discards) (chosen.get(key(a)) === total.get(key(a)) && !unknown.has(loose(a)) ? safe : skipped).push(a);
   const list = JSON.stringify(safe.map(fingerprint));
   const js = `var L=${list};
 var A=ArtifactStat,M=Array.from(A.MinorAffixes);

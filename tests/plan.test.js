@@ -116,6 +116,30 @@ describe('配装分配与清单', () => {
     expect(plan.records.find(r => r.id === 'off').category).toBe('keep');
     expect(plan.records.find(r => r.id === 'cand').category).toBe('upgrade');
   });
+  test('已选用但未满级、未毕业的件列入强化', () => {
+    const set = fullSet('a', 1);
+    set[0] = { ...set[0], level: 8, subs: [sub('cpct', 1), sub('cdmg', 1), sub('atk', 1), sub('def', 1)] };
+    const r = buildPlan(snapshot(set), builds()).records.find(x => x.id === 'a0');
+    expect(r.category).toBe('upgrade');
+    expect(r.reasons.join()).toContain('已选用');
+  });
+  test('五件同套时任一部位都接受其他套装的强化候选', () => {
+    const cand = item('cand', { level: 0, set: '黄金剧团', subs: [sub('cpct', 1), sub('atk', 1), sub('def', 1)] });
+    const plan = buildPlan(snapshot([...fullSet('a', 1), cand]), builds());
+    expect(plan.records.find(r => r.id === 'cand').category).toBe('upgrade');
+  });
+  test('存在 blocker 时四星不作材料，改为待复查', () => {
+    const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })], { complete: false }), builds());
+    expect(plan.records.find(r => r.id === 'four').category).toBe('review');
+    expect(plan.counts.fodder).toBe(0);
+  });
+  test('识别异常件不使计划中止', () => {
+    const bad = item('bad', { main: { key: 'unknown', value: 1 } });
+    const weak = item('weak', { name: '弱花', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...fullSet('a'), weak, bad]), builds());
+    expect(plan.records.find(r => r.id === 'bad').category).toBe('review');
+    expect(plan.records.find(r => r.id === 'weak').category).toBe('discard');
+  });
   test('扫描未确认完整时不生成分解清单', () => {
     const extra = item('x', { subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
     const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());

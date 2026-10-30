@@ -17,6 +17,15 @@ export function coreFor(character, index = 0) {
   return core;
 }
 
+/**
+ * 某件实际可用的核心副词条：主词条占用的属性不会再出现在副词条上，从核心中去掉；
+ * 去掉后为空（如钟离生命沙、精通流精通杯）时改用该玩法其余的副词条。
+ */
+export function coreForPiece(core, artifact, build) {
+  const rest = core.filter(k => k !== artifact.main.key);
+  return rest.length ? rest : (build?.subStats || []).filter(k => k !== artifact.main.key);
+}
+
 /** 圣遗物是否带有任一核心副词条（含待激活词条）。 */
 export function hasCore(artifact, core) {
   return artifact.subs.some(s => core.includes(s.key));
@@ -51,7 +60,7 @@ export function rolledKey(before, after) {
 export function nextAction({ level, misses, artifact, core }) {
   if (!hasCore(artifact, core)) return 'stop';
   if (misses > MAX_MISSES) return 'stop';
-  return level >= 20 ? 'done' : 'continue';
+  return level >= ({ 4: 16 }[artifact.rarity] || 20) ? 'done' : 'continue';
 }
 
 /**

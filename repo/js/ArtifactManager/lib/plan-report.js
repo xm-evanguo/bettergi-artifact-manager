@@ -25,7 +25,7 @@ body{font:15px/1.6 system-ui,sans-serif;color:#20313b;background:#f4f5f1;margin:
 ${plan.blockers.length ? `<div class="notice"><strong>分解清单已关闭</strong><ul>${plan.blockers.map(b => `<li>${e(b)}</li>`).join('')}</ul></div>` : ''}
 <div class="cards">${Object.entries(labels).map(([k, v]) => `<div class="card">${v}<strong>${plan.counts[k]}</strong></div>`).join('')}</div>
 <h2>每个角色的目标配装</h2><div class="wrap"><table><thead><tr><th>角色</th>${SLOT_NAMES.map(n => `<th>${n}</th>`).join('')}</tr></thead><tbody>${loadouts}</tbody></table></div>
-<h2>待强化（${plan.counts.upgrade}）</h2><p><small>+4、+8、+12 三次中歪两次即停止；+12 时最多歪一次则强化到 +20。</small></p><ul>${list('upgrade')}</ul>
+<h2>待强化（${plan.counts.upgrade}）</h2><p><small>+4、+8、+12 三次中歪两次即停止；+12 时最多歪一次则强化到满级（五星 +20，四星 +16）。</small></p><ul>${list('upgrade')}</ul>
 <h2>分解（${plan.counts.discard}）</h2><ul>${list('discard')}</ul>
 ${plan.counts.discard ? `<h2>BetterGI 自动分解筛选脚本</h2><p><small>复制到 BetterGI「自动分解」的 JavaScript 设置中。只匹配上面分解清单里属性完全一致的圣遗物。${plan.salvage.skipped.length ? `有 ${plan.salvage.skipped.length} 件因库存中存在同属性保留件而跳过。` : ''}</small></p><textarea readonly>${e(plan.salvage.js)}</textarea>` : ''}
 <h2>待复查（${plan.counts.review}）</h2><ul>${list('review')}</ul>
