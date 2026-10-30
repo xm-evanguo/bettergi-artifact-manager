@@ -181,6 +181,15 @@ describe('配装分配与清单', () => {
     expect(plan.records.find(r => r.id === 'bad').category).toBe('review');
     expect(plan.records.find(r => r.id === 'weak').category).toBe('discard');
   });
+  test('已核实的套装名错字直接纠正，其余只差一字的转为待复查', () => {
+    const doc = builds();
+    doc.characters[0].builds[0].sets = ['绝缘之旗印', '烬城勇者绘卷'];
+    const cinder = fullSet('c').map(a => ({ ...a, set: '炽城勇者绘卷' }));
+    const near = item('near', { set: '绝缘之旗即', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...cinder, near]), doc);
+    expect(plan.records.find(r => r.id === 'c0').set).toBe('烬城勇者绘卷');
+    expect(plan.records.find(r => r.id === 'near').category).toBe('review');
+  });
   test('扫描未确认完整时不生成分解清单', () => {
     const extra = item('x', { subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
     const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());

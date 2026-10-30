@@ -9,6 +9,9 @@ const MAIN_SLOT = { 2: 'sands', 3: 'goblet', 4: 'circlet' };
 /** 最高只有四星的套装；五星套装的四星版本仍作材料。 */
 const FOUR_STAR_SETS = ['教官', '流放者', '学士', '赌徒', '奇迹', '勇士之心', '守护之心', '行者之心', '武人', '冒险家', '幸运儿', '游医'];
 
+/** 实机扫描中核实过的套装名 OCR 错字。 */
+const SET_ALIASES = { 炽城勇者绘卷: '烬城勇者绘卷' };
+
 /** 各星级满级。 */
 const MAX_LEVEL = { 5: 20, 4: 16 };
 
@@ -63,6 +66,14 @@ export function buildPlan(input, buildsDoc) {
   const characters = (Array.isArray(buildsDoc?.characters) ? buildsDoc.characters : []).filter(c => Array.isArray(c.builds) && c.builds.length).toSorted((a, b) => (b.level || 0) - (a.level || 0));
   // 没有任何有效配装时，所有五星都会落入分解，必须关闭分解清单。
   if (!characters.length) blockers.push('配装数据没有任何角色或玩法，不生成分解清单');
+  // OCR 读错套装名：已核实的错字直接纠正；其余与推荐套装只差一个字的不猜测，转为待复查，
+  // 因为它也可能是另一个真实套装。
+  const knownSets = [...new Set(characters.flatMap(c => c.builds.flatMap(b => b.sets)))];
+  for (const a of snapshot.artifacts) {
+    if (SET_ALIASES[a.set]) a.set = SET_ALIASES[a.set];
+    if (!a.set || knownSets.includes(a.set)) continue;
+    if (knownSets.some(k => k.length === a.set.length && [...k].filter((ch, i) => ch !== a.set[i]).length === 1)) a.issues.push('套装名可能识别有误');
+  }
   // 可分配：全部五星，以及配装点名、且最高只有四星的套装（如教官）；其余作强化材料。
   const wantedSets = new Set(characters.flatMap(c => c.builds.flatMap(b => b.sets)).filter(s => FOUR_STAR_SETS.includes(s)));
   const usable = snapshot.artifacts.filter(a => !a.issues.length && (a.rarity === 5 || (a.rarity === 4 && wantedSets.has(a.set))));

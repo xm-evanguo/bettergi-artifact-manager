@@ -105,6 +105,10 @@ describe('面板解析', () => {
     const a = parsePanel(panel(0), 'a', { ordinal: 1 });
     expect(a.set).toBe('绝缘之旗印'); expect(a.main).toEqual({ key: 'hpPlus', value: 4780 }); expect(a.subs).toHaveLength(4); expect(a.rarity).toBe(5); expect(a.locked).toBeNull();
   });
+  test('行首圆点被读成其他符号时仍读出副词条', () => {
+    const text = panel(0).replace('·', '').replace('暴击伤害+7.8%', '?暴击伤害+7.8%').replace('攻击力+5.8%', '。攻击力+5.8%');
+    expect(parsePanel(text, 'a').subs.map(x => x.key)).toEqual(['cpct', 'cdmg', 'atk', 'recharge']);
+  });
   test('有穿戴行时读出角色，无穿戴行时为未穿戴', () => {
     expect(parsePanel(panel(0, '\n雷电将军已装备'), 'a').equippedBy).toBe('雷电将军');
     expect(parsePanel(panel(0), 'a').equippedBy).toBe('');
