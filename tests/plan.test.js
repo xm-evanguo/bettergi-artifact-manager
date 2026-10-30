@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test';
 import { buildPlan, expectedFinal } from '../repo/js/ArtifactManager/lib/plan.js';
-import { renderPlanReport } from '../repo/js/ArtifactManager/lib/plan-report.js';
+import { renderPlanReport, farmView } from '../repo/js/ArtifactManager/lib/plan-report.js';
 import { item, snapshot } from './helpers.js';
 
 /** 虚构配装：一名雷电将军，绝缘之旗印，充能/攻击沙、雷伤杯、双暴头。 */
@@ -235,6 +235,24 @@ describe('刷取优先级', () => {
     const html = renderPlanReport(plan);
     expect(html).toContain('需要刷的圣遗物');
     expect(html).toContain('按套装汇总');
+    // 页面内联脚本须是合法 JavaScript。
+    const script = html.match(/<script>([\s\S]+?)<\/script>/)[1];
+    expect(() => new Function(script)).not.toThrow();
+  });
+  test('筛选角色与目标档位：只看所选角色，按目标线重算未达标部位与差距', () => {
+    const slot = (n, projected) => ({ slot: n, now: projected, projected, graduated: projected >= 42 });
+    const farming = [
+      { name: '甲', set: 'A', complete: true, now: 200, total: 200, slots: [slot(0, 40), slot(1, 40), slot(2, 40), slot(3, 40), slot(4, 40)] },
+      { name: '乙', set: 'B', complete: true, now: 240, total: 240, slots: [slot(0, 48), slot(1, 48), slot(2, 48), slot(3, 48), slot(4, 48)] },
+      { name: '丙', set: 'A', complete: true, now: 100, total: 100, slots: [slot(0, 20), slot(1, 20), slot(2, 20), slot(3, 20), slot(4, 20)] },
+    ];
+    const v = farmView(farming, ['甲', '乙'], 49);
+    expect(v.rows.map(r => r.name)).toEqual(['甲', '乙']);
+    expect(v.rows[1].weak).toHaveLength(5);
+    expect(v.rows[0].gap).toBe(45);
+    expect(v.sets.map(x => x.set)).toEqual(['A', 'B']);
+    expect(farmView(farming, ['乙'], 42).rows[0].weak).toHaveLength(0);
+    expect(farmView(farming, null, 42).rows[0].name).toBe('丙');
   });
 });
 
