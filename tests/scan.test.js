@@ -10,9 +10,11 @@ const panel = (n, extra = '') => `虚构之花\n生之花\n生命值\n4,780\n+20
  * 可以是小数以模拟误差累积；点击格子中心命中当时显示在该位置的那一行。滚到底时与底部对齐。
  * 只记录点击、滚动与检查点，不发送任何系统输入。
  */
-function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrollRows = 4, clicksPerRow = 39 / scrollRows } = {}) {
-  const items = Array.from({ length: count }, (_, i) => panel(i));
-  const maxPos = Math.max(0, Math.ceil(count / 8) - 5) * clicksPerRow;
+function fakeBag({ count = 2, shown = count, materials = 0, header, unstable = false, failAt = Infinity, scrollRows = 4, clicksPerRow = 39 / scrollRows } = {}) {
+  // shown：筛选后实际显示的件数；materials：末尾的强化材料格数。
+  const items = Array.from({ length: shown }, (_, i) => panel(i));
+  const cells = () => [...items, ...Array.from({ length: materials }, () => '祝圣油膏\n圣遗物强化素材\n圣遗物经验素材，含有2500点经验值。')];
+  const maxPos = Math.max(0, Math.ceil((shown + materials) / 8) - 5) * clicksPerRow;
   const state = { clicks: 0, scrolls: 0, ups: 0, saves: [], pos: 0, selected: null, reads: 0, opened: false };
   const host = {
     size: async () => ({ width: 1920, height: 1080 }),
@@ -20,7 +22,7 @@ function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrol
     ocr: async rect => {
       if (rect.height === 100) return header ?? `圣遗物 ${count}/2100`;
       if (unstable && state.reads++ % 2) return '不同结果';
-      return state.selected === null ? '' : items[state.selected] ?? '';
+      return state.selected === null ? '' : cells()[state.selected] ?? '';
     },
     click: async (x, y) => {
       state.clicks++;
@@ -28,7 +30,9 @@ function fakeBag({ count = 2, header, unstable = false, failAt = Infinity, scrol
       if (x === 675 && y === 50) return;
       const col = Math.round((x - 180) / 145), row = Math.round((y - 253) / 166);
       const top = Number.isFinite(clicksPerRow) ? state.pos / clicksPerRow : 0;
-      state.selected = Math.floor(top + row + 0.5) * 8 + col;
+      const index = Math.floor(top + row + 0.5) * 8 + col;
+      // 点到空格时选中项不变，面板仍显示上一件。
+      if (index < shown + materials) state.selected = index;
     },
     move: async () => {},
     scroll: async n => {
@@ -155,6 +159,29 @@ describe('背包扫描', () => {
     const r = await scanInventory(second.host, { resume: partial });
     expect(r.scan.complete).toBe(false);
     expect(r.scan.issues.join()).toContain('没有重叠');
+  });
+  test('末尾的强化材料与空格不计入，件数相符时完整', async () => {
+    const { host, items } = fakeBag({ count: 93, materials: 2 });
+    const r = await scanInventory(host);
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+  });
+  test('开着筛选时读到末尾即停止，提示取消筛选，不宣称完整', async () => {
+    for (const materials of [0, 2]) {
+      const { host, items } = fakeBag({ count: 120, shown: 93, materials, header: '圣遗物 120/2100' });
+      const r = await scanInventory(host);
+      expect(r.scan.complete).toBe(false);
+      expect(r.artifacts.map(a => a.rawOcr)).toEqual(items);
+      expect(r.scan.issues.join()).toContain('筛选');
+    }
+  });
+  test('续扫时去掉旧版误记的强化材料', async () => {
+    const partial = await scanInventory(fakeBag({ count: 100 }).host, { maxPages: 1 });
+    partial.artifacts.push({ ...partial.artifacts[0], rawOcr: '祝圣油膏\n圣遗物强化素材' });
+    const second = fakeBag({ count: 100 });
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.complete).toBe(true);
+    expect(r.artifacts.map(a => a.rawOcr)).toEqual(second.items);
   });
   test('面板不稳定时停止，不能继续下一件', async () => {
     const { host, state } = fakeBag({ unstable: true });

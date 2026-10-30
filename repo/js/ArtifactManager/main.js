@@ -30,7 +30,8 @@ function plan(snapshot) {
   const result = buildPlan(snapshot, JSON.parse(file.readTextSync('data/builds.json')));
   write('saved_files/plan.json', JSON.stringify(result, null, 2));
   write('saved_files/plan.html', renderPlanReport(result));
-  write('saved_files/salvage-filter.js', result.salvage.js);
+  // BetterGI 只允许脚本写入 .txt、.json、.html 等扩展名，不能写 .js。
+  write('saved_files/salvage-filter.txt', result.salvage.js);
   const c = result.counts;
   log.info(`计划已生成：saved_files/plan.html。保留 ${c.keep}，待强化 ${c.upgrade}，分解 ${c.discard}，待复查 ${c.review}，材料 ${c.fodder}。`);
   if (result.blockers.length) log.warn(`分解清单已关闭：${result.blockers.join('；')}`);
