@@ -1,0 +1,87 @@
+import { describe, test, expect } from 'bun:test';
+import { buildPlan } from '../repo/js/ArtifactManager/lib/plan.js';
+import { renderPlanReport } from '../repo/js/ArtifactManager/lib/plan-report.js';
+import { item, snapshot } from './helpers.js';
+
+/** 虚构配装：一名雷电将军，绝缘之旗印，充能/攻击沙、雷伤杯、双暴头。 */
+function builds(characters = [{ name: '雷电将军', level: 90 }]) {
+  return {
+    graduateGrade: 'SSS',
+    characters: characters.map(c => ({ ...c, builds: [{ sets: ['绝缘之旗印'], mainStats: { sands: ['recharge', 'atk'], goblet: ['electro'], circlet: ['cpct', 'cdmg'] }, subStats: ['cpct', 'cdmg', 'atk', 'recharge'] }] })),
+  };
+}
+
+/** 构造副词条；数值按满档次数给出。 */
+const sub = (key, rolls) => ({ key, value: Math.round({ cpct: 3.89, cdmg: 7.77, atk: 5.83, def: 7.29, hp: 5.83, mastery: 23.31 }[key] * rolls * 10) / 10, active: true });
+
+/** 一套完整的虚构 +20 绝缘五件；crit 为双暴各自的强化次数，其余次数落在攻击和防御。 */
+function fullSet(prefix, crit = 3) {
+  const other = 4 - crit;
+  const subs = [sub('cpct', crit), sub('cdmg', crit), sub('atk', other), sub('def', other)];
+  const main = [{ key: 'hpPlus', value: 4780 }, { key: 'atkPlus', value: 311 }, { key: 'recharge', value: 51.8 }, { key: 'electro', value: 46.6 }, { key: 'cpct', value: 31.1 }];
+  return main.map((m, slot) => item(`${prefix}${slot}`, { slot, main: m, subs: slot === 4 ? subs.filter(s => s.key !== 'cpct').concat(sub('hp', 1)) : subs }));
+}
+
+describe('配装分配与清单', () => {
+  test('完整一套分给角色并全部保留', () => {
+    const plan = buildPlan(snapshot(fullSet('a')), builds());
+    expect(plan.loadouts[0].complete).toBe(true);
+    expect(plan.loadouts[0].slots.every(s => s.id)).toBe(true);
+    expect(plan.counts.keep).toBe(5);
+    expect(plan.counts.discard).toBe(0);
+  });
+  test('更弱的同部位件进入分解清单，并生成筛选脚本', () => {
+    const weak = item('weak', { subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...fullSet('a'), weak]), builds());
+    expect(plan.records.find(r => r.id === 'weak').category).toBe('discard');
+    expect(plan.salvage.js).toContain('Output=');
+  });
+  test('同一件只分给一个角色，高等级角色先挑', () => {
+    const plan = buildPlan(snapshot(fullSet('a')), builds([{ name: '雷电将军', level: 80 }, { name: '刻晴', level: 90 }]));
+    expect(plan.loadouts[0].name).toBe('刻晴');
+    expect(plan.loadouts[1].slots.every(s => !s.id)).toBe(true);
+  });
+  test('未毕业部位保留带核心词条的未满级候选，无核心词条的分解', () => {
+    const set = fullSet('a', 1);
+    // crit=1 的整套分数低于毕业线。
+    const hopeful = item('hope', { level: 0, subs: [sub('cpct', 1), sub('atk', 1), sub('def', 1)] });
+    const hopeless = item('none', { level: 0, subs: [sub('atk', 1), sub('def', 1), sub('hp', 1)] });
+    const plan = buildPlan(snapshot([...set, hopeful, hopeless]), builds());
+    expect(plan.loadouts[0].slots[0].graduated).toBe(false);
+    expect(plan.records.find(r => r.id === 'hope').category).toBe('upgrade');
+    expect(plan.records.find(r => r.id === 'none').category).toBe('discard');
+  });
+  test('凑不齐自身套装的高等级角色不抢其他角色的整套', () => {
+    const doc = builds([{ name: '雷电将军', level: 80 }]);
+    doc.characters.unshift({ name: '芙宁娜', level: 100, builds: [{ sets: ['黄金剧团'], mainStats: { sands: ['recharge', 'hp'], goblet: ['hp', 'hydro'], circlet: ['cpct', 'cdmg'] }, subStats: ['cpct', 'cdmg'] }] });
+    const plan = buildPlan(snapshot(fullSet('a')), doc);
+    expect(plan.loadouts.find(l => l.name === '雷电将军').complete).toBe(true);
+    expect(plan.loadouts[0].name).toBe('芙宁娜');
+  });
+  test('非五星作为材料，不进入分解清单', () => {
+    const plan = buildPlan(snapshot([...fullSet('a'), item('four', { rarity: 4, level: 16 })]), builds());
+    expect(plan.records.find(r => r.id === 'four').category).toBe('fodder');
+  });
+  test('扫描未确认完整时不生成分解清单', () => {
+    const extra = item('x', { subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...fullSet('a'), extra], { complete: false }), builds());
+    expect(plan.counts.discard).toBe(0);
+    expect(plan.records.find(r => r.id === 'x').category).toBe('review');
+    expect(plan.salvage.js).toBe('');
+  });
+  test('锁定和穿戴件也参与计算，分解时注明需先处理', () => {
+    const locked = item('lk', { locked: true, equippedBy: '刻晴', subs: [sub('atk', 3), sub('def', 3), sub('hp', 1), sub('mastery', 1)] });
+    const r = buildPlan(snapshot([...fullSet('a'), locked]), builds()).records.find(x => x.id === 'lk');
+    expect(r.category).toBe('discard');
+    expect(r.reasons.join()).toContain('解锁');
+    expect(r.reasons.join()).toContain('卸下');
+  });
+  test('报告转义外部文字并包含筛选脚本', () => {
+    const weak = item('weak', { name: '<img>', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const html = renderPlanReport(buildPlan(snapshot([...fullSet('a'), weak]), builds()));
+    expect(html).toContain('&lt;img&gt;');
+    expect(html).not.toContain('<img>');
+    expect(html).toContain('<textarea readonly>');
+    expect(html).toContain('雷电将军');
+  });
+});

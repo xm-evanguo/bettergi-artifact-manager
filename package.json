@@ -9,6 +9,7 @@
     "check": "bun tools/check.js",
     "demo": "bun tools/analyze.js repo/js/ArtifactManager/data/demo-snapshot.json repo/js/ArtifactManager/data/demo-config.json output/demo",
     "data": "bun tools/build-miao-data.js",
-    "build:repo": "bun tools/build-repo.js"
+    "build:repo": "bun tools/build-repo.js",
+    "plan": "bun tools/plan.js"
   }
 }
