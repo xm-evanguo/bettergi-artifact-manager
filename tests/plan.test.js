@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { buildPlan } from '../repo/js/ArtifactManager/lib/plan.js';
-import { renderPlanReport } from '../repo/js/ArtifactManager/lib/plan-report.js';
+import { buildPlan, expectedFinal } from '../repo/js/ArtifactManager/lib/plan.js';
+import { renderPlanReport, farmView } from '../repo/js/ArtifactManager/lib/plan-report.js';
 import { item, snapshot } from './helpers.js';
 
 /** 虚构配装：一名雷电将军，绝缘之旗印，充能/攻击沙、雷伤杯、双暴头。 */
@@ -186,8 +186,10 @@ describe('配装分配与清单', () => {
     doc.characters[0].builds[0].sets = ['绝缘之旗印', '烬城勇者绘卷'];
     const cinder = fullSet('c').map(a => ({ ...a, set: '炽城勇者绘卷' }));
     const near = item('near', { set: '绝缘之旗即', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
-    const plan = buildPlan(snapshot([...cinder, near]), doc);
+    const forge = item('forge', { set: '炉火融炼之心', subs: [sub('cpct', 1), sub('atk', 3), sub('def', 3), sub('mastery', 1)] });
+    const plan = buildPlan(snapshot([...cinder, near, forge]), doc);
     expect(plan.records.find(r => r.id === 'c0').set).toBe('烬城勇者绘卷');
+    expect(plan.records.find(r => r.id === 'forge').set).toBe('炉火熔炼之心');
     expect(plan.records.find(r => r.id === 'near').category).toBe('review');
   });
   test('扫描未确认完整时不生成分解清单', () => {
@@ -213,3 +215,75 @@ describe('配装分配与清单', () => {
     expect(html).toContain('雷电将军');
   });
 });
+
+describe('刷取优先级', () => {
+  test('期望满级面板：主词条取满级值，剩余次数平均分到副词条', () => {
+    const a = item('x', { level: 0, main: { key: 'cpct', value: 4.7 }, subs: [sub('cdmg', 1), sub('atk', 1), sub('def', 1), sub('hp', 1)] });
+    const f = expectedFinal(a);
+    expect(f.level).toBe(20);
+    expect(f.main.value).toBe(31.1);
+    expect(f.subs[0].value).toBeCloseTo(7.8 + 5 / 4 * 0.85 * 7.77, 1);
+    const three = expectedFinal({ ...a, subs: [sub('cdmg', 1), sub('atk', 1), { ...sub('def', 1), active: false }] });
+    expect(three.subs.every(s => s.active)).toBe(true);
+    expect(three.subs[0].value).toBeCloseTo(7.8 + 4 / 4 * 0.85 * 7.77, 1);
+    // 三词条且第四词条未知：其余可能词条均摊一次激活与后续强化的期望值。
+    const open = expectedFinal({ ...a, subs: [sub('cdmg', 1), sub('atk', 1), sub('def', 1)] });
+    const extra = open.subs.slice(3);
+    expect(extra.length).toBe(6);
+    expect(extra.every(s => s.active && s.value > 0)).toBe(true);
+    expect(extra.find(s => s.key === 'mastery').value).toBeCloseTo((1 + 4 / 4) * 0.85 * 23.31 / 6, 1);
+    // 四星：+16 满级，副词条档位按 0.8 倍。
+    const four = expectedFinal({ ...a, rarity: 4, main: { key: 'cpct', value: 4.2 } });
+    expect(four.level).toBe(16);
+    expect(four.main.value).toBe(23.2);
+    expect(four.subs[0].value).toBeCloseTo(7.8 + 4 / 4 * 0.85 * 7.77 * 0.8, 1);
+  });
+  test('多套装可选时，预计分只取能凑成 4 件同套的组合', () => {
+    const doc = builds();
+    doc.characters[0].builds[0].sets = ['绝缘之旗印', '烬城勇者绘卷'];
+    // 两个套装各只有部分部位，逐部位取最高分无法成套；只能选一套并以散件补齐。
+    const a = fullSet('a', 2).slice(0, 3);
+    const b = fullSet('b', 4).slice(3).map(x => ({ ...x, set: '烬城勇者绘卷' }));
+    const plan = buildPlan(snapshot([...a, ...b]), doc);
+    const f = plan.farming[0];
+    expect(f.complete).toBe(false);
+    expect(f.total).toBeCloseTo(plan.loadouts[0].slots.reduce((n, s) => n + s.score, 0), 1);
+  });
+  test('已选用但未满级的当前件，强化后预计按满级期望计分', () => {
+    const set = fullSet('a', 2);
+    // 花只有 +4，副词条带双暴；没有其他候选件，预计分只能来自它自己强化到满级。
+    set[0] = { ...set[0], level: 4, main: { key: 'hpPlus', value: 1530 }, subs: [sub('cpct', 1), sub('cdmg', 1), sub('atk', 1), sub('def', 1)] };
+    const plan = buildPlan(snapshot(set), builds());
+    expect(plan.records.find(r => r.id === 'a0').category).toBe('upgrade');
+    const flower = plan.farming[0].slots[0];
+    expect(flower.projected).toBeGreaterThan(flower.now);
+  });
+  test('按强化后预计总分从低到高排列，报告列出刷取表', () => {
+    const plan = buildPlan(snapshot([...fullSet('a', 4), ...fullSet('b', 1)]), builds([{ name: '雷电将军', level: 90 }, { name: '刻晴', level: 80 }]));
+    expect(plan.farming).toHaveLength(2);
+    expect(plan.farming[0].total).toBeLessThan(plan.farming[1].total);
+    expect(plan.farming[0].name).toBe('刻晴');
+    const html = renderPlanReport(plan);
+    expect(html).toContain('需要刷的圣遗物');
+    expect(html).toContain('按套装汇总');
+    // 页面内联脚本须是合法 JavaScript。
+    const script = html.match(/<script>([\s\S]+?)<\/script>/)[1];
+    expect(() => new Function(script)).not.toThrow();
+  });
+  test('筛选角色与目标档位：只看所选角色，按目标线重算未达标部位与差距', () => {
+    const slot = (n, projected) => ({ slot: n, now: projected, projected, graduated: projected >= 42 });
+    const farming = [
+      { name: '甲', set: 'A', complete: true, now: 200, total: 200, slots: [slot(0, 40), slot(1, 40), slot(2, 40), slot(3, 40), slot(4, 40)] },
+      { name: '乙', set: 'B', complete: true, now: 240, total: 240, slots: [slot(0, 48), slot(1, 48), slot(2, 48), slot(3, 48), slot(4, 48)] },
+      { name: '丙', set: 'A', complete: true, now: 100, total: 100, slots: [slot(0, 20), slot(1, 20), slot(2, 20), slot(3, 20), slot(4, 20)] },
+    ];
+    const v = farmView(farming, ['甲', '乙'], 49);
+    expect(v.rows.map(r => r.name)).toEqual(['甲', '乙']);
+    expect(v.rows[1].weak).toHaveLength(5);
+    expect(v.rows[0].gap).toBe(45);
+    expect(v.sets.map(x => x.set)).toEqual(['A', 'B']);
+    expect(farmView(farming, ['乙'], 42).rows[0].weak).toHaveLength(0);
+    expect(farmView(farming, null, 42).rows[0].name).toBe('丙');
+  });
+});
+

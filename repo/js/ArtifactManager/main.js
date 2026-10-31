@@ -1,6 +1,7 @@
 import { analyze } from './lib/analyze.js';
 import { renderReport } from './lib/report.js';
 import { scanInventory } from './lib/scan.js';
+import { parsePanel } from './lib/ocr.js';
 import { buildPlan } from './lib/plan.js';
 import { renderPlanReport } from './lib/plan-report.js';
 
@@ -29,7 +30,8 @@ function plan(snapshot) {
   const result = buildPlan(snapshot, JSON.parse(file.readTextSync('data/builds.json')));
   write('saved_files/plan.json', JSON.stringify(result, null, 2));
   write('saved_files/plan.html', renderPlanReport(result));
-  write('saved_files/salvage-filter.js', result.salvage.js);
+  // BetterGI 只允许脚本写入 .txt、.json、.html 等扩展名，不能写 .js。
+  write('saved_files/salvage-filter.txt', result.salvage.js);
   const c = result.counts;
   log.info(`计划已生成：saved_files/plan.html。保留 ${c.keep}，待强化 ${c.upgrade}，分解 ${c.discard}，待复查 ${c.review}，材料 ${c.fodder}。`);
   if (result.blockers.length) log.warn(`分解清单已关闭：${result.blockers.join('；')}`);
@@ -48,9 +50,22 @@ await (async function main() {
     if (snapshot.scan.issues.length) log.warn(`扫描问题：${snapshot.scan.issues.join('；')}`);
     return plan(snapshot);
   }
+  if (mode === '继续上次扫描') {
+    if (!file.isFile('saved_files/inventory.json')) throw new Error('还没有扫描结果，请先选择「扫描并生成计划」。');
+    const prior = JSON.parse(file.readTextSync('saved_files/inventory.json'));
+    if (prior.scan?.complete) throw new Error('上次扫描已完整，无需续扫；请选择「用上次扫描生成计划」。');
+    const pages = String(opts.maxPages || '').trim();
+    const snapshot = await scanInventory(makeHost('saved_files/inventory.json'), { autoOpen: true, resume: prior, maxPages: pages ? Number(pages) : undefined });
+    log.info(`续扫结束：${snapshot.artifacts.length}/${snapshot.scan.total ?? '?'} 件，已保存 saved_files/inventory.json。`);
+    if (snapshot.scan.issues.length) log.warn(`扫描问题：${snapshot.scan.issues.join('；')}`);
+    return plan(snapshot);
+  }
   if (mode === '用上次扫描生成计划') {
     if (!file.isFile('saved_files/inventory.json')) throw new Error('还没有扫描结果，请先选择「扫描并生成计划」。');
-    return plan(JSON.parse(file.readTextSync('saved_files/inventory.json')));
+    // 用当前解析规则重新解析原始文本，旧扫描也能得到后来的识别修正。
+    const snapshot = JSON.parse(file.readTextSync('saved_files/inventory.json'));
+    snapshot.artifacts = snapshot.artifacts.map(a => (a.rawOcr ? parsePanel(a.rawOcr, a.id, a.location) : a));
+    return plan(snapshot);
   }
   if (mode === '示例报告') {
     const result = analyze(JSON.parse(file.readTextSync('data/demo-snapshot.json')), JSON.parse(file.readTextSync('data/demo-config.json')));

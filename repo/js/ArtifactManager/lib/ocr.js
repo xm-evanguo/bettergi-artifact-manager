@@ -10,6 +10,13 @@ const MAIN_CURVE = {
 };
 const ELEM_KEYS = ['pyro', 'hydro', 'cryo', 'electro', 'anemo', 'geo', 'dendro'];
 
+/** 主词条满级数值；未知词条或星级返回 null。 */
+export function mainAtMax(key, rarity) {
+  const c = MAIN_CURVE[rarity];
+  const v = c?.[ELEM_KEYS.includes(key) ? 'elem' : key];
+  return v ? v[1] : null;
+}
+
 /**
  * 按主词条数值反推星级；两种星级都对不上（误差超过 6%）时返回 null。
  * +17 以上只可能是五星，但仍核对五星曲线，避免主词条数值误读后被当作有效数据。
@@ -36,10 +43,14 @@ export function parsePanel(text, id, location) {
   const slot = slotIndex < 0 ? -1 : SLOT_NAMES.indexOf(lines[slotIndex]);
   const setIndex = lines.findIndex(s => /2件套/.test(s));
   const level = lines.find(s => /^\+\d{1,2}$/.test(s));
-  const mainName = lines[slotIndex + 1];
-  const mainValue = lines[slotIndex + 2] || '';
+  // 部位与主词条名之间偶尔多出单字杂行（实机羽毛出现过「可」）；主词条名至少两个汉字，跳过其他行。
+  const mainIndex = slotIndex < 0 ? -1 : lines.findIndex((s, i) => i > slotIndex && /^[\u4e00-\u9fa5]{2,}$/.test(s));
+  const mainName = lines[mainIndex];
+  // 主词条数值前偶尔多出一行「000」之类的杂字（实机 +0 沙漏出现过）；主词条不可能为 0，跳过全零行。
+  const valueIndex = mainIndex < 0 ? -1 : lines.findIndex((s, i) => i > mainIndex && !/^0+$/.test(s));
+  const mainValue = lines[valueIndex] || '';
   const subs = [];
-  for (const line of lines.slice(slotIndex + 3, setIndex < 0 ? undefined : setIndex)) {
+  for (const line of lines.slice(valueIndex + 1, setIndex < 0 ? undefined : setIndex)) {
     const m = line.match(/^([^+]+)\+([\d,.]+%?)(.*)$/);
     if (!m) continue;
     // 行首圆点常被 OCR 读成 ?、。、0 等符号，去掉词条名前所有非中文字符。
