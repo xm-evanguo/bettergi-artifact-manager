@@ -131,8 +131,8 @@ export async function scanInventory(host, options = {}) {
         if (starts.length > 1) throw new Error(`第 ${page} 页首行与多处已读记录相同，无法确定位置，停止扫描。`);
         if (starts.length === 1) return { viewStart: starts[0], top };
       }
-      // 续扫从背包顶部开始；按「获取时间」排序时新获得的圣遗物排在最前，首行对不上即说明库存变了。
-      if (!maxNudge) throw new Error('背包开头与上次记录不同：可能获得了新圣遗物、强化了开头的圣遗物，或改了排序方式。请重新完整扫描。');
+      // 续扫从背包顶部开始；按获得时间展示时位置固定，首行对不上即说明库存或排序变了。
+      if (!maxNudge) throw new Error('背包开头与上次记录不同：可能获得了新圣遗物、强化了开头的圣遗物，或改了排序方式（含右上角「按获得时间顺序展示」开关）。请重新完整扫描。');
       throw new Error(`第 ${page} 页与上一页没有重叠，回滚 ${MAX_NUDGE} 格后仍对不上，可能滚动过多漏件，停止扫描。`);
     };
     const scrollPage = async () => {
