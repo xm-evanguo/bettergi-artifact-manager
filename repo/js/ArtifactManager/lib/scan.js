@@ -119,8 +119,8 @@ export async function scanInventory(host, options = {}) {
      * 用重叠部分定位：读视图首行的若干格，必须与已读记录中恰好一行吻合，才能证明中间没有漏件。
      * 每页滚动的格数与 4 行略有出入，误差会逐页累积；对不上时先回滚一格再试，最多回滚约 1.5 行。
      */
-    const align = async (page, cols, from) => {
-      for (let nudge = 0; nudge <= MAX_NUDGE; nudge++) {
+    const align = async (page, cols, from, maxNudge = MAX_NUDGE) => {
+      for (let nudge = 0; nudge <= maxNudge; nudge++) {
         if (nudge) { await host.scroll(1); await host.sleep(300); }
         const top = new Map();
         for (const col of cols) top.set(col, await read({ ordinal: `第 ${page} 页首行`, ...at(col) }));
@@ -131,6 +131,8 @@ export async function scanInventory(host, options = {}) {
         if (starts.length > 1) throw new Error(`第 ${page} 页首行与多处已读记录相同，无法确定位置，停止扫描。`);
         if (starts.length === 1) return { viewStart: starts[0], top };
       }
+      // 续扫从背包顶部开始；按「获取时间」排序时新获得的圣遗物排在最前，首行对不上即说明库存变了。
+      if (!maxNudge) throw new Error('背包开头与上次记录不同：可能获得了新圣遗物、强化了开头的圣遗物，或改了排序方式。请重新完整扫描。');
       throw new Error(`第 ${page} 页与上一页没有重叠，回滚 ${MAX_NUDGE} 格后仍对不上，可能滚动过多漏件，停止扫描。`);
     };
     const scrollPage = async () => {
@@ -155,7 +157,7 @@ export async function scanInventory(host, options = {}) {
     if (prior) {
       // 快进：先核对当前视图，已全部记录才翻页；每页核对首行全部 8 格，直到出现未读格子再从该页继续读取。
       while (records.length < total && !gridEnd) {
-        const { viewStart, top } = await align(page, Array.from({ length: COLS }, (_, i) => i), 0);
+        const { viewStart, top } = await align(page, Array.from({ length: COLS }, (_, i) => i), 0, page === 1 ? 0 : MAX_NUDGE);
         if (unread(viewStart)) { await readView(page, viewStart, top); break; }
         page++;
         await scrollPage();

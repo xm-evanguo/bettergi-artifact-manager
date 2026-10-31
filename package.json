@@ -1,6 +1,6 @@
 {
   "name": "bettergi-artifact-manager",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "type": "module",
   "description": "BetterGI 圣遗物整理脚本本地原型",

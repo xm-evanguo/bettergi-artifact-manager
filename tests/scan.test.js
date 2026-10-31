@@ -158,7 +158,18 @@ describe('背包扫描', () => {
     second.items[3] = panel(999);
     const r = await scanInventory(second.host, { resume: partial });
     expect(r.scan.complete).toBe(false);
-    expect(r.scan.issues.join()).toContain('没有重叠');
+    expect(r.scan.issues.join()).toContain('背包开头与上次记录不同');
+  });
+  test('续扫：按获取时间排序时，开头出现新圣遗物即拒绝', async () => {
+    const partial = await scanInventory(fakeBag({ count: 100 }).host, { maxPages: 1 });
+    // 获得 1 件新的（排在最前）并分解 1 件旧的，总数不变。
+    const second = fakeBag({ count: 100 });
+    second.items.unshift(panel(999));
+    second.items.pop();
+    const r = await scanInventory(second.host, { resume: partial });
+    expect(r.scan.complete).toBe(false);
+    expect(r.scan.issues.join()).toContain('获得了新圣遗物');
+    expect(second.state.ups).toBe(0);
   });
   test('末尾的强化材料与空格不计入，件数相符时完整', async () => {
     const { host, items } = fakeBag({ count: 93, materials: 2 });
